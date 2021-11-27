@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+coinbase/api.txt
+balances/src/coinbase/config.js
