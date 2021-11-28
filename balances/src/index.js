@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import GetTransactions from './coinbase/transactions';
 
-
+GetTransactions();
 ReactDOM.render(
   <React.StrictMode>
     <App />

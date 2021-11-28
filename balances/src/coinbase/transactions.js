@@ -1,14 +1,19 @@
+
+
 const config = require('./config.js')
 const coinbase = require('coinbase')
+var Client = require('coinbase').Client;
 
 var crypto = require('crypto');
 
 var request = require('request');
 
+const apiKey = config.default.COINBASE_API_KEY
+const apiSecret = config.default.COINBASE_API_SECRET
+const userID = config.default.COINBASE_ID
 
-const apiKey = COINBASE_API_KEY
+const client = coinbase.Client({'apiKey':apiKey, 'apiSecret':apiSecret})
 
-const client = coinbase.Client(apiKey)
 
 function GetTransactions(){
     //get unix time in seconds
@@ -17,7 +22,7 @@ function GetTransactions(){
     // set the parameter for the request message
     var req = {
         method: 'GET',
-        path: '/v2/exchange-rates?currency=USD',
+        path: 'v2/accounts/:' + String(userID) +'/buys',
         body: ''
     };
 
@@ -36,15 +41,19 @@ function GetTransactions(){
             'CB-ACCESS-SIGN': signature,
             'CB-ACCESS-TIMESTAMP': timestamp,
             'CB-ACCESS-KEY': apiKey,
-            'CB-VERSION': '2015-07-22'
+            
         }
     };
-
+    
     request(options,function(err, response){
-        if (err) console.log(err);
+        if (err) console.log("Error!" + err);
+        
+        var res = response;
         console.log(response.body);
+        debugger;
+        
     });
-
+    
 }
 
 export default GetTransactions;
