@@ -5,12 +5,16 @@ def main():
     print("Main")
 
     reportData = ReportData("./Report.csv")
-
+    currencies  = ['BTC', 'ETH', 'DOGE']
+    labels = []
     fix, ax = plt.subplots()
-    ax = PlotCumSpotPrice(reportData.buyData['BTC'], 'BTC', ax=ax)
-    ax = PlotActualCurrencyPrice(reportData.buyData['BTC'], 'BTC', ax=ax)
+    for currency in currencies:
+        ax = PlotCumSpotPrice(reportData.buyData[currency], currency, ax=ax)
+        ax = PlotActualCurrencyPrice(reportData.buyData[currency], currency, ax=ax)
+        labels.append(f'{currency}$SPEND')
+        labels.append(f'{currency}$WORTH')
+    ax.legend(labels)
     plt.show()
-
 
 
 

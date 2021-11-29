@@ -63,7 +63,6 @@ class ReportData():
         for currency in self.currencies:
             self.currencyData[currency], self.buyData[currency], self.convertData[currency] = ExtractCurrencyData(self.reportDf, currency)
         
-        
-        
+      
 
 
