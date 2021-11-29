@@ -1,10 +1,15 @@
 from coinbaseReport import *
 from wallet import *
-
+from plot import * 
 def main():
     print("Main")
 
-    ReportData("./Report.csv")
+    reportData = ReportData("./Report.csv")
+
+    fix, ax = plt.subplots()
+    ax = PlotCumSpotPrice(reportData.buyData['BTC'], 'BTC', ax=ax)
+    ax = PlotActualCurrencyPrice(reportData.buyData['BTC'], 'BTC', ax=ax)
+    plt.show()
 
 
 
