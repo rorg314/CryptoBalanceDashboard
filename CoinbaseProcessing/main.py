@@ -1,5 +1,5 @@
 from coinbaseReport import *
-from pricaData import *
+from priceData import *
 from plot import * 
 def main():
     print("Main")
