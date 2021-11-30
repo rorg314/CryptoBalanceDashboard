@@ -5,6 +5,9 @@ import cryptocompare
 from datetime import datetime
 from time import mktime
 
+
+
+
 # Build the dataframe from the report csv
 def ExtractBalanceDataframe(reportPath):
     
@@ -36,7 +39,7 @@ def ExtractCurrencyData(reportDf, currencyStr="BTC"):
     #Slice the dataframe by the asset 
     currencyDf = reportDf.loc[(reportDf['Asset'] == currencyStr)]
 
-    # Slice by buy/sells
+    # Slice by buy
     buyDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Buy')]
 
     # Slice by converts
@@ -52,6 +55,17 @@ def FilterCurrencyData(currencyDf, buyDf, convertDf):
     return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
 
 
+# ======================================================== #
+# ======================== CLASSES ======================= #
+# ======================================================== #
+
+
+class Coin():
+    def __init__(self, name:str):
+        # Name of the coin
+        self.name = name
+        # Year to date daily prices
+
 
 class ReportData():
     def __init__(self, reportPath="./Report.csv"):
@@ -62,8 +76,45 @@ class ReportData():
         self.currencyData, self.buyData, self.convertData = dict(), dict(), dict()
         for currency in self.currencies:
             self.currencyData[currency], self.buyData[currency], self.convertData[currency] = ExtractCurrencyData(self.reportDf, currency)
+
+        for coin in self.currencies:
+            Wallet(coin, self)
         
-        # Currency -> total held dict
+
+class Wallet():
+    def __init__(self, coin:Coin, reportData:ReportData, balance=0):
+        # Coin in this wallet
+        self.coin = coin
+        
+        # Coin balance
+        self.balance = balance
+
+        # Dict of timestamp -> amount bought
+        self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin]['Timestamp'].to_list(), reportData.buyData[coin]['Quantity Transacted'].to_list())}
+        # Dict of timestamp -> amount bought
+        self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin]['Timestamp'].to_list(), reportData.convertData[coin]['Quantity Transacted'].to_list())}
+        
+        # Date -> cumlBalance dict 
+        self.timestampCumlBal = self.CalculateCumlBalance()
+
+        
+        
+    # Calculate cumulative bal for buy/convert
+    def CalculateCumlBalance(self):
+    
+        buys = self.timestampBuys
+        # Add converts to buys
+        buys.update(self.timestampConverts)
+        # Sort combined buy/convert by timestamp
+        combinedSorted = {key:buys[key] for key in sorted(list(buys.keys()))}
+        
+        cumlBal = [sum(list(combinedSorted.values())[0:x:1]) for x in range(0, len(list(combinedSorted.values())))]
+
+        return {time:cumlBal for time, cumlBal in zip(list(combinedSorted.keys()), cumlBal)}
+
+        
+
+
         
 
 

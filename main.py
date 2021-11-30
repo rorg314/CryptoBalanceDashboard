@@ -1,5 +1,5 @@
 from coinbaseReport import *
-from wallet import *
+
 from plot import * 
 def main():
     print("Main")
@@ -14,10 +14,9 @@ def main():
         labels.append(f'{currency}$SPEND')
         labels.append(f'{currency}$WORTH')
     ax.legend(labels)
-    #plt.show()
+    plt.show()
 
-    for coin in currencies:
-        Wallet(coin, reportData)
+    
 
 
 
