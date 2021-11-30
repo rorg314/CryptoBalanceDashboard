@@ -7,6 +7,8 @@ class CoinStats extends React.Component {
     super(props);
     //console.log(this.props);
     var wallets = GetWallets();
+
+    debugger;
     var wallet;
     if (props["coin"] === "BTC") {
       wallet = wallets[0];
