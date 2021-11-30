@@ -20,7 +20,7 @@ def CheckLastFetch(symbol):
             f.write('0')
             return True
 
-def fetch_daily_data(symbol):
+def FetchDailyData(symbol):
     pair_split = symbol.split('/')  # symbol must be in format XXX/XXX ie. BTC/EUR
     symbol = pair_split[0] + '-' + pair_split[1]
     url = f'https://api.pro.coinbase.com/products/{symbol}/candles?granularity=86400'
@@ -59,7 +59,7 @@ def FetchCachedPriceData(pairs):
         pair_split = pair.split('/')  # symbol must be in format XXX/XXX ie. BTC/EUR
         symbol = pair_split[0] + '-' + pair_split[1]
         if(CheckLastFetch(symbol)):
-            fetch_daily_data(symbol=pair)
+            FetchDailyData(symbol=pair)
         JSONPriceData(symbol=pair)
 
               

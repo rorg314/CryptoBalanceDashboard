@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import cryptocompare
 from datetime import datetime as dt
 import datetime
+import json
 from time import mktime
 
 
@@ -65,13 +66,15 @@ class Coin():
     def __init__(self, name:str):
         # Name of the coin
         self.name = name
-        
+        # Symbol /USD
+        self.symbol = self.name+"-USD"
+        # Previous prices
+        with open(r"./Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
+            self.dateHighLow = json.loads(f.readline())
+        self.datePriceHighs = {date:price for date, price in zip(list(self.dateHighLow.keys()), [price[0] for price in list(self.dateHighLow.values())])}
+        self.datePriceLows = {date:price for date, price in zip(list(self.dateHighLow.keys()), [price[1] for price in list(self.dateHighLow.values())])}
 
 
-    def GetPricesInPastRange(self, dayRange):
-        
-        print("hi")
-                    
 
 
 class ReportData():
@@ -102,9 +105,10 @@ class Wallet():
         # Date -> cumlBalance dict 
         self.timestampCumlBal = self.CalculateCumlBalance()
 
-        self.ytdPrices = coin.GetPricesInPastRange(7)
-
-    
+        self.dashStats = WalletDashStats(self)
+        JSON_Str = json.dumps(self.dashStats.__dict__)
+        print(2)
+        
 
     # Calculate cumulative bal for buy/convert
     def CalculateCumlBalance(self):
@@ -120,7 +124,13 @@ class Wallet():
         return {time:cumlBal for time, cumlBal in zip(list(combinedSorted.keys()), cumlBal)}
 
         
-
+class WalletDashStats():
+    def __init__(self, wallet:Wallet):
+        self.coin = wallet.coin.name
+        self.symbol = wallet.coin.symbol
+        self.balance = wallet.balance
+        self.cumlBalance = wallet.timestampCumlBal
+        
 
         
 
