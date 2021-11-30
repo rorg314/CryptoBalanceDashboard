@@ -16,7 +16,7 @@ def CheckLastFetch(symbol):
             else: 
                 return False
     except FileNotFoundError:
-        with open (r"./" +symbol+ r"_lastfetch.txt", 'w') as f:
+        with open (r"./Prices/" +symbol+ r"_lastfetch.txt", 'w') as f:
             f.write('0')
             return True
 

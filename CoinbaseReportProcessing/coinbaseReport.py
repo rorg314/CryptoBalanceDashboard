@@ -107,7 +107,9 @@ class Wallet():
 
         self.dashStats = WalletDashStats(self)
         JSON_Str = json.dumps(self.dashStats.__dict__)
-        print(2)
+        with open(r"./Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
+            f.write(JSON_Str)
+    
         
 
     # Calculate cumulative bal for buy/convert
@@ -121,7 +123,7 @@ class Wallet():
         
         cumlBal = [sum(list(combinedSorted.values())[0:x:1]) for x in range(0, len(list(combinedSorted.values())))]
 
-        return {time:cumlBal for time, cumlBal in zip(list(combinedSorted.keys()), cumlBal)}
+        return {dt.strftime(time, '%Y-%m-%d'):cumlBal for time, cumlBal in zip(list(combinedSorted.keys()), cumlBal)}
 
         
 class WalletDashStats():
