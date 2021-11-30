@@ -17,15 +17,15 @@ def ExtractBalanceDataframe(reportPath):
     return reportDataframe
 
 
-def UnixTimestamp(dataframe):
+def DatetimeTimestamps(dataframe):
     raw = dataframe['Timestamp'].to_list()
-    unixTimes = list()
+    dateTimes = list()
     for time in raw:
         time = time.split('T')[0].replace('-', ' ').strip()
-        unixTimes.append(mktime(datetime.strptime(time, '%Y %m %d').timetuple()))
+        dateTimes.append(datetime.strptime(time, '%Y %m %d'))
     
     dataframe.drop('Timestamp', axis=1, inplace=True)
-    dataframe['Timestamp'] = unixTimes
+    dataframe['Timestamp'] = dateTimes
     return dataframe
 
 # Use to extract the buy/sell data for an individual currency
@@ -49,7 +49,7 @@ def ExtractCurrencyData(reportDf, currencyStr="BTC"):
 # Filter the data to only include those columns 
 def FilterCurrencyData(currencyDf, buyDf, convertDf):
     includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)']
-    return UnixTimestamp(currencyDf.loc[:, includeCols]), UnixTimestamp(buyDf.loc[:, includeCols]), UnixTimestamp(convertDf.loc[:, includeCols])
+    return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
 
 
 
@@ -63,6 +63,7 @@ class ReportData():
         for currency in self.currencies:
             self.currencyData[currency], self.buyData[currency], self.convertData[currency] = ExtractCurrencyData(self.reportDf, currency)
         
-      
+        # Currency -> total held dict
+        
 
 

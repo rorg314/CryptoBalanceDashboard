@@ -14,7 +14,11 @@ def main():
         labels.append(f'{currency}$SPEND')
         labels.append(f'{currency}$WORTH')
     ax.legend(labels)
-    plt.show()
+    #plt.show()
+
+    for coin in currencies:
+        Wallet(coin, reportData)
+
 
 
 
