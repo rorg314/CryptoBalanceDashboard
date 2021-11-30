@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 
 API_KEY
+
+Report.csv
+Coinbase-59ee4cc9c5945c02a7b7f288-TransactionsHistoryReport-2021-10-19-15_17_43.csv
+
