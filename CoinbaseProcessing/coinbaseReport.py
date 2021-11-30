@@ -95,8 +95,7 @@ class Wallet():
         # Coin in this wallet
         self.coin = coin
         
-        # Coin total balance
-        self.balance = balance
+        
 
         # Dict of timestamp -> amount bought
         self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
@@ -105,9 +104,13 @@ class Wallet():
         # Date -> cumlBalance dict 
         self.timestampCumlBal = self.CalculateCumlBalance()
 
+        # Coin total balance
+        self.balance = list(self.timestampCumlBal.values())[-1]
+
+
         self.dashStats = WalletDashStats(self)
         JSON_Str = json.dumps(self.dashStats.__dict__)
-        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/src/Wallets" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
+        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/src/coinbase/Wallets" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
             f.write(JSON_Str)
     
         
