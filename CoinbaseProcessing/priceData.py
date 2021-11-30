@@ -11,7 +11,7 @@ def CheckLastFetch(symbol):
             if(lastFetchLines):
                 lastFetch = float(lastFetchLines[-1])
             now = time.time()
-            if(now > lastFetch +10000):
+            if(now > lastFetch +1000):
                 return True
             else: 
                 return False
@@ -50,7 +50,7 @@ def JSONPriceData(symbol):
     JSON = json.dumps(dateHighLowDict)
     with open(outPath, 'w+') as f:
         f.write(JSON)
-    print(2)
+    
 
 
 def FetchCachedPriceData(pairs):

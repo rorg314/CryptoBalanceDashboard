@@ -5,6 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "node",
+            "program": "D:/Coding/CryptoBalance/CryptoDashboardApp/src/App.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        },
+        {
             "name": "Python: Main",
             "type": "python",
             "request": "launch",
