@@ -64,7 +64,16 @@ class Coin():
     def __init__(self, name:str):
         # Name of the coin
         self.name = name
-        # Year to date daily prices
+        
+
+
+    def GetPricesInPastRange(self, dayRange):
+        base = datetime.datetime.today()
+        date_list = [base - datetime.timedelta(days=x) for x in range(dayRange)]
+        timestampList = [mktime(time.timetuple()) for time in date_list]
+        prices = [cryptocompare.get_historical_price(self.name, 'USD', time) for time in timestampList]
+        print("hi")
+                    
 
 
 class ReportData():
@@ -77,8 +86,7 @@ class ReportData():
         for currency in self.currencies:
             self.currencyData[currency], self.buyData[currency], self.convertData[currency] = ExtractCurrencyData(self.reportDf, currency)
 
-        for coin in self.currencies:
-            Wallet(coin, self)
+             
         
 
 class Wallet():
@@ -86,19 +94,20 @@ class Wallet():
         # Coin in this wallet
         self.coin = coin
         
-        # Coin balance
+        # Coin total balance
         self.balance = balance
 
         # Dict of timestamp -> amount bought
-        self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin]['Timestamp'].to_list(), reportData.buyData[coin]['Quantity Transacted'].to_list())}
+        self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
         # Dict of timestamp -> amount bought
-        self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin]['Timestamp'].to_list(), reportData.convertData[coin]['Quantity Transacted'].to_list())}
-        
+        self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), reportData.convertData[coin.name]['Quantity Transacted'].to_list())}
         # Date -> cumlBalance dict 
         self.timestampCumlBal = self.CalculateCumlBalance()
 
-        
-        
+        self.ytdPrices = coin.GetPricesInPastRange(365)
+
+    
+
     # Calculate cumulative bal for buy/convert
     def CalculateCumlBalance(self):
     

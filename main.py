@@ -6,6 +6,10 @@ def main():
 
     reportData = ReportData("./Report.csv")
     currencies  = ['BTC', 'ETH', 'DOGE']
+    coinWalletDict = dict()
+    for coin in currencies:
+        coinWalletDict[Coin(coin)] = Wallet(coin, reportData)
+    
     labels = []
     fix, ax = plt.subplots()
     for currency in currencies:
