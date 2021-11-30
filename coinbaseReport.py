@@ -2,7 +2,8 @@ from cryptocompare.cryptocompare import Timestamp
 import pandas as pd
 from matplotlib import pyplot as plt
 import cryptocompare
-from datetime import datetime
+from datetime import datetime as dt
+import datetime
 from time import mktime
 
 
@@ -25,7 +26,7 @@ def DatetimeTimestamps(dataframe):
     dateTimes = list()
     for time in raw:
         time = time.split('T')[0].replace('-', ' ').strip()
-        dateTimes.append(datetime.strptime(time, '%Y %m %d'))
+        dateTimes.append(dt.strptime(time, '%Y %m %d'))
     
     dataframe.drop('Timestamp', axis=1, inplace=True)
     dataframe['Timestamp'] = dateTimes
@@ -68,10 +69,7 @@ class Coin():
 
 
     def GetPricesInPastRange(self, dayRange):
-        base = datetime.datetime.today()
-        date_list = [base - datetime.timedelta(days=x) for x in range(dayRange)]
-        timestampList = [mktime(time.timetuple()) for time in date_list]
-        prices = [cryptocompare.get_historical_price(self.name, 'USD', time) for time in timestampList]
+        
         print("hi")
                     
 
@@ -104,7 +102,7 @@ class Wallet():
         # Date -> cumlBalance dict 
         self.timestampCumlBal = self.CalculateCumlBalance()
 
-        self.ytdPrices = coin.GetPricesInPastRange(365)
+        self.ytdPrices = coin.GetPricesInPastRange(7)
 
     
 

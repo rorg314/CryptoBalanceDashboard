@@ -1,14 +1,20 @@
 from coinbaseReport import *
-
+from pricaData import *
 from plot import * 
 def main():
     print("Main")
-
+    
     reportData = ReportData("./Report.csv")
+    
     currencies  = ['BTC', 'ETH', 'DOGE']
+    pairs = [curr+"/USD" for curr in currencies]
+    FetchCachedPriceData(pairs)
+    
     coinWalletDict = dict()
-    for coin in currencies:
-        coinWalletDict[Coin(coin)] = Wallet(coin, reportData)
+    
+    for currency in currencies:
+        coin = Coin(currency)
+        coinWalletDict[coin] = Wallet(coin, reportData)
     
     labels = []
     fix, ax = plt.subplots()
