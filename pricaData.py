@@ -4,17 +4,21 @@ import requests
 import json
 import time
 
-def CheckLastFetch():
-    with open (r"./lastfetch.txt", 'r') as f:
-        
-        lastFetchLines = f.readlines()
-        if(lastFetchLines):
-            lastFetch = float(lastFetchLines[-1])
-        now = time.time()
-        if(now > lastFetch +10000):
+def CheckLastFetch(symbol):
+    try:
+        with open (r"./Prices/" +symbol+ r"_lastfetch.txt", 'r') as f:
+            lastFetchLines = f.readlines()
+            if(lastFetchLines):
+                lastFetch = float(lastFetchLines[-1])
+            now = time.time()
+            if(now > lastFetch +10000):
+                return True
+            else: 
+                return False
+    except FileNotFoundError:
+        with open (r"./" +symbol+ r"_lastfetch.txt", 'w') as f:
+            f.write('0')
             return True
-        else: 
-            return False
 
 def fetch_daily_data(symbol):
     pair_split = symbol.split('/')  # symbol must be in format XXX/XXX ie. BTC/EUR
@@ -30,8 +34,8 @@ def fetch_daily_data(symbol):
         if data is None:
             print("Did not return any data from Coinbase for this symbol")
         else:
-            data.to_csv(f'.Prices/Coinbase_{pair_split[0] + pair_split[1]}_dailydata.csv', index=False)
-            with open (r"./lastfetch.txt", 'w') as f:
+            data.to_csv(f'./Prices/Coinbase_{pair_split[0] + pair_split[1]}_dailydata.csv', index=False)
+            with open (r"./Prices/" +symbol+ r"_lastfetch.txt", 'w') as f:
                 lastFetch = f.write(str(time.time()))
     else:
         print("Did not receieve OK response from Coinbase API")
@@ -39,10 +43,10 @@ def fetch_daily_data(symbol):
 def JSONPriceData(symbol):
     pair_split = symbol.split('/')  # symbol must be in format XXX/XXX ie. BTC/EUR
     symbol = pair_split[0] + '-' + pair_split[1]
-    dataPath = r"./Coinbase_" + symbol + r"_dailydata.csv"
+    dataPath = r"./Prices/Coinbase_" + pair_split[0] + pair_split[1] + r"_dailydata.csv"
     priceData = pd.read_csv(dataPath)
     dateHighLowDict = {date:(high,low) for date, (high, low) in zip(priceData['date'].to_list(), [(high, low) for (high, low) in zip(priceData['high'].to_list(), priceData['low'].to_list())])}
-    outPath = r"./Prices/" +  + r"/DailyPrices_YTD.JSON"
+    outPath = r"./Prices/" + symbol + r"_DailyPrices_YTD.JSON"
     JSON = json.dumps(dateHighLowDict)
     with open(outPath, 'w+') as f:
         f.write(JSON)
@@ -52,7 +56,9 @@ def JSONPriceData(symbol):
 def FetchCachedPriceData(pairs):
 
     for pair in pairs:
-        if(CheckLastFetch()):
+        pair_split = pair.split('/')  # symbol must be in format XXX/XXX ie. BTC/EUR
+        symbol = pair_split[0] + '-' + pair_split[1]
+        if(CheckLastFetch(symbol)):
             fetch_daily_data(symbol=pair)
         JSONPriceData(symbol=pair)
 
