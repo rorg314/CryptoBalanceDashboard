@@ -107,7 +107,7 @@ class Wallet():
 
         self.dashStats = WalletDashStats(self)
         JSON_Str = json.dumps(self.dashStats.__dict__)
-        with open(r"./Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
+        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/src/Wallets" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
             f.write(JSON_Str)
     
         
