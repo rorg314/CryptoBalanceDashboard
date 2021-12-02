@@ -110,7 +110,7 @@ class Wallet():
 
         self.dashStats = WalletDashStats(self)
         JSON_Str = json.dumps(self.dashStats.__dict__)
-        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/src/coinbase/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
+        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
             json.dump(JSON_Str, f)
     
         

@@ -1,22 +1,12 @@
 import React, { Component } from "react";
-import GetWallets from "../coinbase/wallets.js";
+import GetWalletsPromise from "../coinbase/wallets.js";
 
 // Component to hold individual coin statistics
 class CoinStats extends React.Component {
   constructor(props) {
     super(props);
 
-    var wallets = GetWallets();
-
-    var wallet;
-    if (props["coin"] === "BTC") {
-      wallet = wallets[0];
-    } else if (props["coin"] === "ETH") {
-      wallet = wallets[1];
-    } else if (props["coin"] === "DOGE") {
-      wallet = wallets[2];
-    }
-    this.state = { coin: props.coin, wallet: wallet };
+    const wallets = GetWalletsPromise().then((res) => console.log(res));
   }
 
   render() {
