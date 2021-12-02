@@ -69,7 +69,7 @@ class Coin():
         # Symbol /USD
         self.symbol = self.name+"-USD"
         # Previous prices
-        with open(r"./Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
+        with open(r"./CoinbaseProcessing/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
             self.dateHighLow = json.loads(f.readline())
         self.datePriceHighs = {date:price for date, price in zip(list(self.dateHighLow.keys()), [price[0] for price in list(self.dateHighLow.values())])}
         self.datePriceLows = {date:price for date, price in zip(list(self.dateHighLow.keys()), [price[1] for price in list(self.dateHighLow.values())])}
@@ -78,7 +78,7 @@ class Coin():
 
 
 class ReportData():
-    def __init__(self, reportPath="./Report.csv"):
+    def __init__(self, reportPath="./CoinbaseProcessing/Report.csv"):
         self.reportDf = ExtractBalanceDataframe(reportPath)
         self.currencies = ['BTC', 'ETH', 'DOGE']
         
@@ -110,8 +110,8 @@ class Wallet():
 
         self.dashStats = WalletDashStats(self)
         JSON_Str = json.dumps(self.dashStats.__dict__)
-        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/src/coinbase/Wallets" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
-            f.write(JSON_Str)
+        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/src/coinbase/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
+            json.dump(JSON_Str, f)
     
         
 

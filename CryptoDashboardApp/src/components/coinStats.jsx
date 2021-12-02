@@ -5,10 +5,9 @@ import GetWallets from "../coinbase/wallets.js";
 class CoinStats extends React.Component {
   constructor(props) {
     super(props);
-    //console.log(this.props);
+
     var wallets = GetWallets();
 
-    debugger;
     var wallet;
     if (props["coin"] === "BTC") {
       wallet = wallets[0];
@@ -25,7 +24,7 @@ class CoinStats extends React.Component {
       <div>
         <ul>
           <li>
-            <h2>Balance: {this.state.wallet.balance}</h2>
+            <h2>Balance: {}</h2>
           </li>
         </ul>
       </div>

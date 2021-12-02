@@ -4,7 +4,7 @@ from plot import *
 def main():
     print("Main")
     
-    reportData = ReportData("./Report.csv")
+    reportData = ReportData("./CoinbaseProcessing/Report.csv")
     
     currencies  = ['BTC', 'ETH', 'DOGE']
     pairs = [curr+"/USD" for curr in currencies]
