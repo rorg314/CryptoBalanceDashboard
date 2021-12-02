@@ -4,9 +4,13 @@ import requests
 import json
 import time
 
+PRICES_FOLDER = r"./CryptoDashboardApp/public/Prices/"
+
 def CheckLastFetch(symbol):
+    
+    
     try:
-        with open (r"./CoinbaseProcessing/Prices/" +symbol+ r"_lastfetch.txt", 'r') as f:
+        with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'r') as f:
             lastFetchLines = f.readlines()
             if(lastFetchLines):
                 lastFetch = float(lastFetchLines[-1])
@@ -16,7 +20,7 @@ def CheckLastFetch(symbol):
             else: 
                 return False
     except FileNotFoundError:
-        with open (r"./CoinbaseProcessing/Prices/" +symbol+ r"_lastfetch.txt", 'w') as f:
+        with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'w') as f:
             f.write('0')
             return True
 
@@ -35,7 +39,7 @@ def FetchDailyData(symbol):
             print("Did not return any data from Coinbase for this symbol")
         else:
             data.to_csv(f'./CoinbaseProcessing/Prices/Coinbase_{pair_split[0] + pair_split[1]}_dailydata.csv', index=False)
-            with open (r"./CoinbaseProcessing/Prices/" +symbol+ r"_lastfetch.txt", 'w') as f:
+            with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'w') as f:
                 lastFetch = f.write(str(time.time()))
     else:
         print("Did not receieve OK response from Coinbase API")
@@ -46,7 +50,7 @@ def JSONPriceData(symbol):
     dataPath = r"./CoinbaseProcessing/Prices/Coinbase_" + pair_split[0] + pair_split[1] + r"_dailydata.csv"
     priceData = pd.read_csv(dataPath)
     dateHighLowDict = {date:(high,low) for date, (high, low) in zip(priceData['date'].to_list(), [(high, low) for (high, low) in zip(priceData['high'].to_list(), priceData['low'].to_list())])}
-    outPath = r"./CoinbaseProcessing/Prices/" + symbol + r"_DailyPrices_YTD.JSON"
+    outPath = PRICES_FOLDER + symbol + r"_DailyPrices_YTD.JSON"
     JSON = json.dumps(dateHighLowDict)
     with open(outPath, 'w+') as f:
         f.write(JSON)
