@@ -4,6 +4,7 @@ import { Tabs, Tab } from "react-bootstrap";
 import React, { Component } from "react";
 
 import CoinStats from "./components/coinStats";
+import UpdateCoinStatsComponent from "./coinbase/wallets.js";
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
                       </Tab>
                       <Tab eventKey="dashboard_BTC" title="BTC">
                         <h2>BTC DASH</h2>
-                        <CoinStats coin="BTC"></CoinStats>
+                        <CoinStats coin="BTC" id="BTC_Stats"></CoinStats>
                       </Tab>
                       <Tab eventKey="dashboard_ETH" title="ETH">
                         <h2>ETH DASH</h2>
