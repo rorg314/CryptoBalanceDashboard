@@ -20,7 +20,7 @@ def CheckLastFetch(symbol):
             else: 
                 return False
     except FileNotFoundError:
-        with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'w') as f:
+        with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'w+') as f:
             f.write('0')
             return True
 
@@ -31,6 +31,8 @@ def FetchDailyData(symbol):
     response = requests.get(url)
     if response.status_code == 200:  # check to make sure the response from server is good
         data = pd.DataFrame(json.loads(response.text), columns=['unix', 'low', 'high', 'open', 'close', 'volume'])
+        # Reverse the dataframe so it goes from last -> today date 
+        data = data.iloc[::-1]
         data['date'] = pd.to_datetime(data['unix'], unit='s')  # convert to a readable date
         data['vol_fiat'] = data['volume'] * data['close']      # multiply the BTC volume by closing price to approximate fiat volume
 
@@ -39,7 +41,7 @@ def FetchDailyData(symbol):
             print("Did not return any data from Coinbase for this symbol")
         else:
             data.to_csv(f'./CoinbaseProcessing/Prices/Coinbase_{pair_split[0] + pair_split[1]}_dailydata.csv', index=False)
-            with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'w') as f:
+            with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'w+') as f:
                 lastFetch = f.write(str(time.time()))
     else:
         print("Did not receieve OK response from Coinbase API")

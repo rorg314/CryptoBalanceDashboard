@@ -21,7 +21,7 @@ def ExtractBalanceDataframe(reportPath):
 
     return reportDataframe
 
-
+# Processing timestamp strings (YYYY-MM-DD T HH:MM:SS Z) into datetimes 
 def DatetimeTimestamps(dataframe):
     raw = dataframe['Timestamp'].to_list()
     dateTimes = list()
@@ -69,7 +69,7 @@ class Coin():
         # Symbol /USD
         self.symbol = self.name+"-USD"
         # Previous prices
-        with open(r"./CoinbaseProcessing/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
+        with open(r"./CryptoDashboardApp/Public/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
             self.dateHighLow = json.loads(f.readline())
         self.datePriceHighs = {date:price for date, price in zip(list(self.dateHighLow.keys()), [price[0] for price in list(self.dateHighLow.values())])}
         self.datePriceLows = {date:price for date, price in zip(list(self.dateHighLow.keys()), [price[1] for price in list(self.dateHighLow.values())])}
@@ -94,49 +94,74 @@ class Wallet():
     def __init__(self, coin:Coin, reportData:ReportData, balance=0):
         # Coin in this wallet
         self.coin = coin
-        
-        
 
         # Dict of timestamp -> amount bought
         self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
         # Dict of timestamp -> amount bought
         self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), reportData.convertData[coin.name]['Quantity Transacted'].to_list())}
-        # Date -> cumlBalance dict 
-        self.timestampCumlBal = self.CalculateCumlBalance()
+        # Date -> cumlBalance dict (sparse)
+        self.timestampCumlBalSparse = self.CalculateCumlBalanceSparse()
+        # Date -> cumlBalance (filled)
+        self.timestampCumlBalFilled = self.CalculateCumlBalanceFilled()
+        # Coin total balance (latest)
+        self.balance = list(self.timestampCumlBalSparse.values())[-1]
 
-        # Coin total balance
-        self.balance = list(self.timestampCumlBal.values())[-1]
-
-
+        # Create dash stats object and dump to json 
         self.dashStats = WalletDashStats(self)
         JSON_Str = json.dumps(self.dashStats.__dict__)
-        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w') as f:
+        # Save in public folder for accessing through react
+        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w+') as f:
             json.dump(JSON_Str, f)
-    
-        
+            
 
-    # Calculate cumulative bal for buy/convert
-    def CalculateCumlBalance(self):
+    # Calculate cumulative balance for buy/convert dates only
+    def CalculateCumlBalanceSparse(self):
     
         buys = self.timestampBuys
         # Add converts to buys
         buys.update(self.timestampConverts)
         # Sort combined buy/convert by timestamp
         combinedSorted = {key:buys[key] for key in sorted(list(buys.keys()))}
-        
+        # Cumulative balance
         cumlBal = [sum(list(combinedSorted.values())[0:x:1]) for x in range(0, len(list(combinedSorted.values())))]
-
+        
+        # Return date -> cuml balance
         return {dt.strftime(time, '%Y-%m-%d'):cumlBal for time, cumlBal in zip(list(combinedSorted.keys()), cumlBal)}
+    
+
+    # Return dict with cuml balance on every date (for known price data)
+    def CalculateCumlBalanceFilled(self):
+        # All dates
+        dates = list(self.coin.dateHighLow.keys())
+        # First buy date
+        startDate = list(self.timestampCumlBalSparse.keys())[-1]
+        # Fill list of cuml balances
+        cumlBalances = []
+        for date in dates:
+            if date in self.timestampCumlBalSparse:
+                # Append the new cuml balance value
+                cumlBalances.append(self.timestampCumlBalSparse[date])
+            else:
+                if(date < startDate):
+                    cumlBalances.append(0)
+                elif(date==startDate):
+                    cumlBalances.append(self.timestampCumlBalSparse)
+                # Append the previous cuml balance value
+                cumlBalances.append(cumlBalances[-1])
+        
+        return {date:bal for date, bal in zip(dates, cumlBalances)}
+    
 
         
 class WalletDashStats():
     def __init__(self, wallet:Wallet):
         self.coin = wallet.coin.name
         self.symbol = wallet.coin.symbol
-        self.balance = wallet.balance
-        self.cumlBalance = wallet.timestampCumlBal
-        
-
+        self.balance = wallet.balance 
+        self.cumlBalancesSparse = wallet.timestampCumlBalSparse
+        self.cumlBalancesFilled = wallet.timestampCumlBalFilled
+        self.cumlBalancesUSDSparse = {date:self.cumlBalancesSparse[date] * wallet.coin.dateHighLow[date] for date in list(self.cumlBalancesSparse.keys())}
+        self.cumlBalancesUSDFilled = {date:self.cumlBalancesFilled[date] * wallet.coin.dateHighLow[date] for date in list(self.cumlBalancesFilled.keys())}
         
 
 
