@@ -51,7 +51,7 @@ def JSONPriceData(symbol):
     symbol = pair_split[0] + '-' + pair_split[1]
     dataPath = r"./CoinbaseProcessing/Prices/Coinbase_" + pair_split[0] + pair_split[1] + r"_dailydata.csv"
     priceData = pd.read_csv(dataPath)
-    dateHighLowDict = {date:(high,low) for date, (high, low) in zip(priceData['date'].to_list(), [(high, low) for (high, low) in zip(priceData['high'].to_list(), priceData['low'].to_list())])}
+    dateHighLowDict = {date:(high,low) for date, (high, low) in zip(priceData['date'].to_list(), [highLow for highLow in zip(priceData['high'].to_list(), priceData['low'].to_list())])}
     outPath = PRICES_FOLDER + symbol + r"_DailyPrices_YTD.JSON"
     JSON = json.dumps(dateHighLowDict)
     with open(outPath, 'w+') as f:

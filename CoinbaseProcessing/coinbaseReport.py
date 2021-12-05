@@ -137,17 +137,15 @@ class Wallet():
         startDate = list(self.timestampCumlBalSparse.keys())[-1]
         # Fill list of cuml balances
         cumlBalances = []
+        lastValue = 0
         for date in dates:
             if date in self.timestampCumlBalSparse:
+                lastValue = self.timestampCumlBalSparse[date]
                 # Append the new cuml balance value
-                cumlBalances.append(self.timestampCumlBalSparse[date])
+                cumlBalances.append(lastValue)
             else:
-                if(date < startDate):
-                    cumlBalances.append(0)
-                elif(date==startDate):
-                    cumlBalances.append(self.timestampCumlBalSparse)
                 # Append the previous cuml balance value
-                cumlBalances.append(cumlBalances[-1])
+                cumlBalances.append(lastValue)
         
         return {date:bal for date, bal in zip(dates, cumlBalances)}
     
@@ -160,8 +158,9 @@ class WalletDashStats():
         self.balance = wallet.balance 
         self.cumlBalancesSparse = wallet.timestampCumlBalSparse
         self.cumlBalancesFilled = wallet.timestampCumlBalFilled
-        self.cumlBalancesUSDSparse = {date:self.cumlBalancesSparse[date] * wallet.coin.dateHighLow[date] for date in list(self.cumlBalancesSparse.keys())}
-        self.cumlBalancesUSDFilled = {date:self.cumlBalancesFilled[date] * wallet.coin.dateHighLow[date] for date in list(self.cumlBalancesFilled.keys())}
+        self.cumlBalancesUSDSparse = dict()
+        self.cumlBalancesUSDSparse = {date:[self.cumlBalancesSparse[date] * price for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesSparse.keys())}
+        self.cumlBalancesUSDFilled = {date:[self.cumlBalancesFilled[date] * price for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesFilled.keys())}
         
 
 
