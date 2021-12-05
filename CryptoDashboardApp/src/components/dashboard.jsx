@@ -1,12 +1,10 @@
 import React, { Component } from "react";
 
+import { Tabs, Tab } from "react-bootstrap";
+import Wallet from "./wallet";
+import { FetchWallet, FetchAllWallets } from "../coinbase/wallets";
+
 class Dashboard extends React.Component {
-  state = {
-
-    coins = this.props.coins
-
-  };
-
   render() {
     return (
       <React.Fragment>
@@ -16,19 +14,9 @@ class Dashboard extends React.Component {
 
         <div id="dashCoinTabsDiv">
           <Tabs id="dashCoinTabs">
-            <Tab eventKey="dashboard_all" title="ALL">
-              <h2>ALL DASH</h2>
-            </Tab>
-            <Tab eventKey="dashboard_BTC" title="BTC">
-              <h2>BTC DASH</h2>
-              <Wallet coin="BTC"></Wallet>
-            </Tab>
-            <Tab eventKey="dashboard_ETH" title="ETH">
-              <h2>ETH DASH</h2>
-            </Tab>
-            <Tab eventKey="dashboard_DOGE" title="DOGE">
-              <h2>DOGE DASH</h2>
-            </Tab>
+            {this.props.wallets.map((wallet) => {
+              <Wallet wallet={wallet} />;
+            })}
           </Tabs>
         </div>
       </React.Fragment>

@@ -4,7 +4,6 @@ import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import UpdateCoinStatsComponent from "./coinbase/wallets.js";
 
 ReactDOM.render(
   <React.StrictMode>
