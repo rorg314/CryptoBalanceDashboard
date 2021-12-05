@@ -6,20 +6,18 @@ class Wallet extends React.Component {
     console.log("Creating wallet", this.props.wallet);
 
     return (
-      <React.Fragment>
-        <Tab
-          eventKey={"wallet" + this.props.wallet.coin}
-          title={this.props.wallet.coin}
-        >
-          <div>
-            <ul>
-              <li>
-                <h2>Balance: {this.props.wallet.balance}</h2>
-              </li>
-            </ul>
-          </div>
-        </Tab>
-      </React.Fragment>
+      <Tab
+        eventKey={"wallet" + this.props.wallet.coin}
+        title={this.props.wallet.coin}
+      >
+        <div>
+          <ul>
+            <li>
+              <h2>Balance: {this.props.wallet.balance}</h2>
+            </li>
+          </ul>
+        </div>
+      </Tab>
     );
   }
 }

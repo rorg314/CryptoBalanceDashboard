@@ -5,21 +5,28 @@ import Wallet from "./wallet";
 import { FetchWallet, FetchAllWallets } from "../coinbase/wallets";
 
 class Dashboard extends React.Component {
-  render() {
-    return (
-      <React.Fragment>
-        <div>
-          <h1>Dashboard</h1>
-        </div>
+  state = {
+    wallets: [{ balance: "hi" }],
+  };
 
-        <div id="dashCoinTabsDiv">
-          <Tabs id="dashCoinTabs">
-            {this.props.wallets.map((wallet) => {
-              <Wallet wallet={wallet} />;
-            })}
-          </Tabs>
-        </div>
-      </React.Fragment>
+  componentDidMount() {
+    // Load wallets
+    FetchAllWallets(this.props.coins).then((res) => {
+      this.setState({ wallets: res });
+    });
+
+    //.then((res) => console.log("Set state", res));
+  }
+
+  render() {
+    console.log("Dashboard render: State: ", this.state);
+
+    return (
+      <Tabs id="dashCoinTabs">
+        {this.state.wallets.map((w) => {
+          <Wallet key={w.coin} wallet={w} />;
+        })}
+      </Tabs>
     );
   }
 }

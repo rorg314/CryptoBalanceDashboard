@@ -10,18 +10,7 @@ import { FetchWallet, FetchAllWallets } from "./coinbase/wallets";
 class App extends React.Component {
   state = {
     coins: ["BTC", "ETH", "DOGE"],
-    wallets: [],
   };
-
-  componentDidMount() {
-    // Load wallets
-    FetchAllWallets(this.state.coins).then((res) => {
-      this.setState({ wallets: res });
-      console.log("Fetched wallets", this.state);
-    });
-
-    //.then((res) => console.log("Set state", res));
-  }
 
   render() {
     return (
@@ -38,7 +27,10 @@ class App extends React.Component {
               <div className="content mr-auto ml-auto">
                 <Tabs defaultActiveKey="dashboard" id="mainTabs">
                   <Tab eventKey="dashboard" title="Dashboard">
-                    <Dashboard wallets={this.state.wallets} />
+                    <div>
+                      <h1>Dashboard</h1>
+                    </div>
+                    <Dashboard coins={this.state.coins} />
                   </Tab>
                 </Tabs>
               </div>
