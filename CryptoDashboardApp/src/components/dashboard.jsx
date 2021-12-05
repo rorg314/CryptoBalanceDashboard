@@ -2,7 +2,9 @@ import React, { Component } from "react";
 
 class Dashboard extends React.Component {
   state = {
-    wallets: [],
+
+    coins = this.props.coins
+
   };
 
   render() {
