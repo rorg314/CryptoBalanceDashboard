@@ -30,6 +30,7 @@ class App extends React.Component {
                     <div>
                       <h1>Dashboard</h1>
                     </div>
+
                     <Dashboard coins={this.state.coins} />
                   </Tab>
                 </Tabs>

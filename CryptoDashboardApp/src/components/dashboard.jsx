@@ -1,12 +1,16 @@
 import React, { Component } from "react";
 
 import { Tabs, Tab } from "react-bootstrap";
-import Wallet from "./wallet";
+import Wallet from "./wallet.jsx";
 import { FetchWallet, FetchAllWallets } from "../coinbase/wallets";
 
 class Dashboard extends React.Component {
   state = {
-    wallets: [{ balance: "hi" }],
+    wallets: [
+      { balance: "hi", coin: "1" },
+      { balance: "hi", coin: "2" },
+      { balance: "hi", coin: "3" },
+    ],
   };
 
   componentDidMount() {
@@ -22,9 +26,13 @@ class Dashboard extends React.Component {
     console.log("Dashboard render: State: ", this.state);
 
     return (
-      <Tabs id="dashCoinTabs">
+      <Tabs id="dashboardWalletTabs">
         {this.state.wallets.map((w) => {
-          <Wallet key={w.coin} wallet={w} />;
+          return (
+            <Tab eventKey={"wallet" + w.coin} title={"Wallet " + w.coin}>
+              <Wallet wallet={w} />
+            </Tab>
+          );
         })}
       </Tabs>
     );
