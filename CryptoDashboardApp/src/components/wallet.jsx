@@ -4,7 +4,7 @@ import { Tabs, Tab } from "react-bootstrap";
 
 class Wallet extends React.Component {
   state = {
-    wallet: { balance: 0 },
+    wallet: { balance: 0, coin: "Loading" },
   };
 
   // Map the promise wallet from props into the state
@@ -18,13 +18,19 @@ class Wallet extends React.Component {
 
   componentDidMount() {
     console.log("Wallet mounted", this.props.wallet);
-    this.props.wallet.then((res) => {
-      this.setState({ wallet: res });
-    });
+
+    // Check if wallet is promise (i.e has .then attribute)
+    if (typeof this.props.wallet.then != "undefined") {
+      this.props.wallet.then((res) => {
+        this.setState({ wallet: res });
+      });
+    } else {
+      this.setState({ wallet: this.props.wallet });
+    }
   }
 
   render() {
-    console.log("Creating wallet: State: ", this.state);
+    console.log("Creating wallet: State: ", this.state, "Props: ", this.props);
 
     return (
       <div>

@@ -7,9 +7,9 @@ import { FetchWallet, FetchAllWallets } from "../coinbase/wallets";
 class Dashboard extends React.Component {
   state = {
     wallets: [
-      // { balance: "hi1", coin: "1" },
-      // { balance: "hi2", coin: "2" },
-      // { balance: "hi3", coin: "3" },
+      { balance: "1", coin: "1" },
+      { balance: "2", coin: "2" },
+      { balance: "3", coin: "3" },
     ],
   };
 
@@ -19,22 +19,21 @@ class Dashboard extends React.Component {
       this.setState({ wallets: res });
     });
 
-    //.then((res) => console.log("Set state", res));
+    //FetchAllWallets(this.props.coins).then((res) => console.log(res));
   }
 
   render() {
     console.log("Dashboard render: State: ", this.state);
-
     return (
       <Tabs id="dashboardWalletTabs">
-        {this.state.wallets.map((w) => {
+        {this.state.wallets.map((wallet) => {
           return (
             <Tab
-              eventKey={"wallet" + w.coin}
-              key={"wallet" + w.coin}
-              title={"Wallet " + w.coin}
+              eventKey={"wallet" + wallet.coin}
+              key={"wallet" + wallet.coin}
+              title={wallet.coin}
             >
-              <Wallet wallet={w} />
+              <Wallet wallet={wallet} />
             </Tab>
           );
         })}
