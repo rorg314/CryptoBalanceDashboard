@@ -1,3 +1,4 @@
+from collections import defaultdict
 from cryptocompare.cryptocompare import Timestamp
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -11,7 +12,7 @@ from time import mktime
 
 
 # Build the dataframe from the report csv
-def ExtractBalanceDataframe(reportPath):
+def ExtractReportDataframe(reportPath):
     
     reportDataframe = pd.read_csv(reportPath)
 
@@ -36,8 +37,6 @@ def DatetimeTimestamps(dataframe):
 # Use to extract the buy/sell data for an individual currency
 def ExtractCurrencyData(reportDf, currencyStr="BTC"):
 
-    assetList = reportDf['Asset']
-
     #Slice the dataframe by the asset 
     currencyDf = reportDf.loc[(reportDf['Asset'] == currencyStr)]
 
@@ -47,22 +46,47 @@ def ExtractCurrencyData(reportDf, currencyStr="BTC"):
     # Slice by converts
     convertDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Convert') &(currencyDf['Fees'] > 0)]
 
-    return FilterCurrencyData(currencyDf, buyDf, convertDf)
-
+    return currencyDf, buyDf, convertDf
 
 
 # Filter the data to only include those columns 
-def FilterCurrencyData(currencyDf, buyDf, convertDf):
-    includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees']
-    return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
+# def FilterCurrencyData(currencyDf, buyDf, convertDf):
+#     includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees']
+#     return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
 
 
+# Format a converted price in USD with 2 decimal places
 def FormatUSDPrice(rawPrice):
     return f"{rawPrice:2.2f}"
 
-# Process the buys into a dict of timestamp -> buy amount (accounts for buys on the same day which it did not previously)
-def GetTimestampBuys()
 
+# Process a list of timestamps and transactions into a dict of timestamp -> transactions (accounts for transactions on the same day which it did not previously)
+# The order of each list must coincide!
+def TimestampTransactionsListDict(timestamps:list, transactions:list):
+    timestampTransactionsDict = defaultdict(list)
+    
+    for idx, timestamp in enumerate(timestamps):
+        timestampTransactionsDict[timestamp].append(transactions[idx])
+    
+    return timestampTransactionsDict
+
+
+# Same as above but aggregates multiple buys on single days
+def TimestampTransactionsDict(timestamps:list, transactions:list):
+    timestampTransactionsDict = dict()
+
+    lastTimestamp = None
+
+    for idx, timestamp in enumerate(timestamps):
+        if(lastTimestamp == timestamp):
+            # Add amount to day total
+            timestampTransactionsDict[timestamp] = timestampTransactionsDict[timestamp] + transactions[idx]
+        else:
+            timestampTransactionsDict[timestamp] = transactions[idx]
+        lastTimestamp = timestamp
+    
+    return timestampTransactionsDict
+    
 
 # ======================================================== #
 # ======================== CLASSES ======================= #
@@ -78,15 +102,13 @@ class Coin():
         # Previous prices
         with open(r"./CryptoDashboardApp/Public/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
             self.dateHighLow = json.loads(f.readline())
-        self.datePriceHighs = {date:price for date, price in zip(list(self.dateHighLow.keys()), [price[0] for price in list(self.dateHighLow.values())])}
-        self.datePriceLows = {date:price for date, price in zip(list(self.dateHighLow.keys()), [price[1] for price in list(self.dateHighLow.values())])}
-
+        
 
 
 
 class ReportData():
     def __init__(self, reportPath="./CoinbaseProcessing/Report.csv"):
-        self.reportDf = ExtractBalanceDataframe(reportPath)
+        self.reportDf = ExtractReportDataframe(reportPath)
         self.currencies = ['BTC', 'ETH', 'DOGE']
         
         # Build individual currency data from report dataframe
@@ -103,11 +125,14 @@ class Wallet():
         self.coin = coin
 
         # Dict of timestamp -> amount bought
-        self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
+        #self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
+        self.timestampBuys = TimestampTransactionsDict(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())
+        
+        # Dict of timestamp -> amount bought
+        #self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), reportData.convertData[coin.name]['Quantity Transacted'].to_list())}
+        self.timestampConverts = TimestampTransactionsDict(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])
         
         print(2)
-        # Dict of timestamp -> amount bought
-        self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), reportData.convertData[coin.name]['Quantity Transacted'].to_list())}
         # Date -> cumlBalance dict (sparse)
         self.timestampCumlBalSparse = self.CalculateCumlBalanceSparse()
         # Date -> cumlBalance (filled)
