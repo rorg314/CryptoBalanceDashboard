@@ -45,7 +45,7 @@ def ExtractCurrencyData(reportDf, currencyStr="BTC"):
     buyDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Buy')]
 
     # Slice by converts
-    convertDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Convert')]
+    convertDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Convert') &(currencyDf['Fees'] > 0)]
 
     return FilterCurrencyData(currencyDf, buyDf, convertDf)
 
@@ -53,12 +53,15 @@ def ExtractCurrencyData(reportDf, currencyStr="BTC"):
 
 # Filter the data to only include those columns 
 def FilterCurrencyData(currencyDf, buyDf, convertDf):
-    includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)']
+    includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees']
     return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
 
 
 def FormatUSDPrice(rawPrice):
     return f"{rawPrice:2.2f}"
+
+# Process the buys into a dict of timestamp -> buy amount (accounts for buys on the same day which it did not previously)
+def GetTimestampBuys()
 
 
 # ======================================================== #
@@ -101,6 +104,8 @@ class Wallet():
 
         # Dict of timestamp -> amount bought
         self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
+        
+        print(2)
         # Dict of timestamp -> amount bought
         self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), reportData.convertData[coin.name]['Quantity Transacted'].to_list())}
         # Date -> cumlBalance dict (sparse)
