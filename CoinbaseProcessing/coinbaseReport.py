@@ -57,6 +57,10 @@ def FilterCurrencyData(currencyDf, buyDf, convertDf):
     return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
 
 
+def FormatUSDPrice(rawPrice):
+    return f"{rawPrice:2.2f}"
+
+
 # ======================================================== #
 # ======================== CLASSES ======================= #
 # ======================================================== #
@@ -159,8 +163,8 @@ class WalletDashStats():
         self.cumlBalancesSparse = wallet.timestampCumlBalSparse
         self.cumlBalancesFilled = wallet.timestampCumlBalFilled
         self.cumlBalancesUSDSparse = dict()
-        self.cumlBalancesUSDSparse = {date:[self.cumlBalancesSparse[date] * price for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesSparse.keys())}
-        self.cumlBalancesUSDFilled = {date:[self.cumlBalancesFilled[date] * price for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesFilled.keys())}
+        self.cumlBalancesUSDSparse = {date:[FormatUSDPrice(self.cumlBalancesSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesSparse.keys())}
+        self.cumlBalancesUSDFilled = {date:[FormatUSDPrice(self.cumlBalancesFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesFilled.keys())}
         
 
 
