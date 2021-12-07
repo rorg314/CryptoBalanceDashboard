@@ -8,6 +8,9 @@ import datetime
 import json
 import decimal
 
+CURRENCIES = ['BTC', 'ETH', 'DOGE']
+
+
 # Build the dataframe from the report csv
 def ExtractReportDataframe(reportPath):
     
@@ -17,7 +20,7 @@ def ExtractReportDataframe(reportPath):
         if(isinstance(reportDataframe[col][0], str)):
             reportDataframe[col].str.lower()
 
-    return reportDataframe
+    return DatetimeTimestamps(reportDataframe)
 
 
 # Processing timestamp strings (YYYY-MM-DD T HH:MM:SS Z) into datetimes 
@@ -36,21 +39,46 @@ def DatetimeTimestamps(dataframe):
 # Use to extract the buy/sell data for an individual currency
 def ExtractCurrencyData(reportDf, currencyStr="BTC"):
 
+    includeCols = ['Timestamp', 'Transaction Type', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees', 'Notes']
+
     #Slice the dataframe by the asset and convert timestamps to datetimes (dates only)
-    currencyDf = reportDf.loc[(reportDf['Asset'] == currencyStr)]
+    currencyDf = reportDf.loc[(reportDf['Asset'] == currencyStr)].loc[:, includeCols]
 
     # Slice by buy
-    buyDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Buy')]
+    buyDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Buy')].loc[:, includeCols]
 
     # Slice by converts
-    convertDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Convert') &(currencyDf['Fees'] > 0)]
+    convertDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Convert') &(currencyDf['Fees'] > 0)].loc[:, includeCols]
 
-    return FilterCurrencyData(currencyDf, buyDf, convertDf)
+    # # Extract amounts of converted currency from description col 
+    # convertedToCurrencyDict = ExtractConvertData(convertDf, currencyStr)
 
+
+    return currencyDf, buyDf, convertDf#, convertedToCurrencyDict
+
+
+def ExtractConvertData(allConvertsDf:pd.DataFrame):
+    # Dict with convertedToCurrency -> {timestamp:amount}
+    convertedToCurrencyDict = defaultdict(lambda: defaultdict(float))
+
+    timestamps = allConvertsDf['Timestamp'].to_list()
+    notes = allConvertsDf['Notes'].to_list()
+
+    for timestamp, note in zip(timestamps, notes):
+        # Strip the note and split on spaces - last two elements are needed
+        split = note.strip().split(' ')
+        amount = float(split[-2])
+        currency = split[-1]
+        convertedToCurrencyDict[currency][timestamp] = convertedToCurrencyDict[currency][timestamp] + amount
+    
+    return convertedToCurrencyDict
+
+    
 
 #Filter the data to only include those columns 
 def FilterCurrencyData(currencyDf, buyDf, convertDf):
-    includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees']
+    includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees', 'Notes']
+
     return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
 
 
@@ -62,8 +90,7 @@ def FormatBTC(raw):
     return f"{raw:.8f}"
 
 
-# Process a list of timestamps and transactions into a dict of timestamp -> transactions (accounts for transactions on the same day which it did not previously)
-# The order of each list must coincide!
+# Process a pair of ordered lists of timestamps and transactions into a dict of timestamp -> transactions (accounts for transactions on the same day which it did not previously)
 def TimestampTransactionsListDict(timestamps:list, transactions:list):
     timestampTransactionsDict = defaultdict(list)
     
@@ -114,12 +141,27 @@ class ReportData():
         self.currencies = ['BTC', 'ETH', 'DOGE']
         
         # Build individual currency data from report dataframe
-        self.currencyData, self.buyData, self.convertData = dict(), dict(), dict()
+        self.currencyData, self.buyData, self.convertData, self.allConvertsDf = dict(), dict(), dict(), None
         for currency in self.currencies:
             self.currencyData[currency], self.buyData[currency], self.convertData[currency] = ExtractCurrencyData(self.reportDf, currency)
-
-             
+            if(self.allConvertsDf is None):
+                # Create the initial all converts dataframe
+                self.allConvertsDf = self.convertData[currency]
+            else:
+                #Update with any more converts
+                self.allConvertsDf.update(self.convertData[currency])
         
+        # Sort the allConverts by timestamp
+        self.allConvertsDf.sort_values(by='Timestamp')
+        
+        # Extract all the converts
+
+        self.convertedToCurrencyDict = ExtractConvertData(self.allConvertsDf)
+
+
+        print(2)
+
+
 
 class Wallet():
     def __init__(self, coin:Coin, reportData:ReportData, balance=0):
@@ -127,18 +169,16 @@ class Wallet():
         self.coin = coin
 
         # Dict of timestamp -> amount bought
-        #self.timestampBuys = {time:buy for time, buy in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
         self.timestampBuys = TimestampTransactionsDict(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())
         
-        # Dict of timestamp -> amount bought
-        #self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), reportData.convertData[coin.name]['Quantity Transacted'].to_list())}
+        # Dict of timestamp -> amount converted (negative in base currency)
         self.timestampConverts = TimestampTransactionsDict(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])
-        
-        
+
         # Date -> cumlBalance dict (sparse)
         self.timestampCumlBalSparse = self.CalculateCumlBalanceSparse()
         # Date -> cumlBalance (filled)
         self.timestampCumlBalFilled = self.CalculateCumlBalanceFilled()
+
         # Coin total balance (latest)
         self.balance = list(self.timestampCumlBalSparse.values())[-1]
 
@@ -146,7 +186,7 @@ class Wallet():
         self.dashStats = WalletDashStats(self)
         JSON_Str = json.dumps(self.dashStats.__dict__)
         # Save in public folder for accessing through react
-        with open(r"D:/Coding/CryptoBalance/CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w+') as f:
+        with open(r"./CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w+') as f:
             json.dump(JSON_Str, f)
             
 
