@@ -24,12 +24,19 @@ def ExtractReportDataframe(reportPath):
 
 
 # Processing timestamp strings (YYYY-MM-DD T HH:MM:SS Z) into datetimes 
-def DatetimeTimestamps(dataframe):
-    raw = dataframe['Timestamp'].to_list()
+def DatetimeTimestamps(dataframe, dayOnly=False):
+    timestampStrings = dataframe['Timestamp'].to_list()
+    replace = ['T', 'Z', '-', ':']
     dateTimes = list()
-    for time in raw:
-        time = time.split('T')[0].replace('-', ' ').strip()
-        dateTimes.append(dt.strptime(time, '%Y %m %d'))
+    for time in timestampStrings:
+        
+        if(dayOnly):
+            time = time.split('T')[0].replace('-', ' ')
+            dateTimes.append(dt.strptime(time.strip(), '%Y %m %d'))
+        else:
+            for char in replace:
+                time = time.replace(char, ' ')
+            dateTimes.append(dt.strptime(time.strip(), '%Y %m %d %H %M %S'))
     
     dataframe.drop('Timestamp', axis=1, inplace=True)
     dataframe['Timestamp'] = dateTimes
