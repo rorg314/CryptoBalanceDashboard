@@ -1,6 +1,7 @@
 from coinbaseReport import *
 from priceData import *
 from plot import * 
+
 def main(plot=False):
     print("Main")
     

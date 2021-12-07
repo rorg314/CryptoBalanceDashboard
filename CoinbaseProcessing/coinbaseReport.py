@@ -6,10 +6,7 @@ import cryptocompare
 from datetime import datetime as dt
 import datetime
 import json
-from time import mktime
-
-
-
+import decimal
 
 # Build the dataframe from the report csv
 def ExtractReportDataframe(reportPath):
@@ -21,6 +18,7 @@ def ExtractReportDataframe(reportPath):
             reportDataframe[col].str.lower()
 
     return reportDataframe
+
 
 # Processing timestamp strings (YYYY-MM-DD T HH:MM:SS Z) into datetimes 
 def DatetimeTimestamps(dataframe):
@@ -34,10 +32,11 @@ def DatetimeTimestamps(dataframe):
     dataframe['Timestamp'] = dateTimes
     return dataframe
 
+
 # Use to extract the buy/sell data for an individual currency
 def ExtractCurrencyData(reportDf, currencyStr="BTC"):
 
-    #Slice the dataframe by the asset 
+    #Slice the dataframe by the asset and convert timestamps to datetimes (dates only)
     currencyDf = reportDf.loc[(reportDf['Asset'] == currencyStr)]
 
     # Slice by buy
@@ -46,18 +45,21 @@ def ExtractCurrencyData(reportDf, currencyStr="BTC"):
     # Slice by converts
     convertDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Convert') &(currencyDf['Fees'] > 0)]
 
-    return currencyDf, buyDf, convertDf
+    return FilterCurrencyData(currencyDf, buyDf, convertDf)
 
 
-# Filter the data to only include those columns 
-# def FilterCurrencyData(currencyDf, buyDf, convertDf):
-#     includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees']
-#     return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
+#Filter the data to only include those columns 
+def FilterCurrencyData(currencyDf, buyDf, convertDf):
+    includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees']
+    return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
 
 
 # Format a converted price in USD with 2 decimal places
-def FormatUSDPrice(rawPrice):
-    return f"{rawPrice:2.2f}"
+def FormatUSD(rawPrice):
+    return f"{rawPrice:.2f}"
+
+def FormatBTC(raw):
+    return f"{raw:.8f}"
 
 
 # Process a list of timestamps and transactions into a dict of timestamp -> transactions (accounts for transactions on the same day which it did not previously)
@@ -132,7 +134,7 @@ class Wallet():
         #self.timestampConverts = {time:-conv for time, conv in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), reportData.convertData[coin.name]['Quantity Transacted'].to_list())}
         self.timestampConverts = TimestampTransactionsDict(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])
         
-        print(2)
+        
         # Date -> cumlBalance dict (sparse)
         self.timestampCumlBalSparse = self.CalculateCumlBalanceSparse()
         # Date -> cumlBalance (filled)
@@ -167,8 +169,7 @@ class Wallet():
     def CalculateCumlBalanceFilled(self):
         # All dates
         dates = list(self.coin.dateHighLow.keys())
-        # First buy date
-        startDate = list(self.timestampCumlBalSparse.keys())[-1]
+        
         # Fill list of cuml balances
         cumlBalances = []
         lastValue = 0
@@ -189,12 +190,12 @@ class WalletDashStats():
     def __init__(self, wallet:Wallet):
         self.coin = wallet.coin.name
         self.symbol = wallet.coin.symbol
-        self.balance = wallet.balance 
+        self.balance = FormatBTC(wallet.balance) 
         self.cumlBalancesSparse = wallet.timestampCumlBalSparse
         self.cumlBalancesFilled = wallet.timestampCumlBalFilled
         self.cumlBalancesUSDSparse = dict()
-        self.cumlBalancesUSDSparse = {date:[FormatUSDPrice(self.cumlBalancesSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesSparse.keys())}
-        self.cumlBalancesUSDFilled = {date:[FormatUSDPrice(self.cumlBalancesFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesFilled.keys())}
+        self.cumlBalancesUSDSparse = {date:[FormatUSD(self.cumlBalancesSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesSparse.keys())}
+        self.cumlBalancesUSDFilled = {date:[FormatUSD(self.cumlBalancesFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesFilled.keys())}
         
 
 
