@@ -5,7 +5,7 @@ import { Tabs, Tab } from "react-bootstrap";
 class Wallet extends React.Component {
   render() {
     //console.log("Creating wallet: State: ", this.state, "Props: ", this.props);
-    console.log(typeof this.props.wallet.cumlBalancesUSDSparse);
+    console.log(typeof this.props.wallet.dateCumlBalUSDSparse);
     return (
       <div>
         <h2>
@@ -13,11 +13,10 @@ class Wallet extends React.Component {
         </h2>
         <h2 style={{ color: "green" }}>
           High: $
-          {Object.values(this.props.wallet.cumlBalancesUSDSparse).pop()[0]}
+          {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[0]}
         </h2>
         <h2 style={{ color: "red" }}>
-          Low: $
-          {Object.values(this.props.wallet.cumlBalancesUSDSparse).pop()[1]}
+          Low: ${Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[1]}
         </h2>
       </div>
     );

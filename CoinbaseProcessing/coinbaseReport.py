@@ -230,6 +230,7 @@ class Wallet():
             dateStr = timestamp._date_repr
             if(dateStr != prevDateStr):
                 # Onto a new date, set cuml balance of the previous date 
+                
                 dateStrCumlBalDict[prevDateStr] = cumlBalSparse[prevTimestamp]
             prevDateStr = dateStr
             prevTimestamp = timestamp
@@ -263,11 +264,11 @@ class WalletDashStats():
         self.coin = wallet.coin.name
         self.symbol = wallet.coin.symbol
         self.balance = FormatBTC(wallet.balance) 
-        self.cumlBalancesSparse = wallet.timestampCumlBalSparse
-        self.cumlBalancesFilled = wallet.dateCumlBalFilled
-        self.cumlBalancesUSDSparse = dict()
-        self.cumlBalancesUSDSparse = {date:[FormatUSD(self.cumlBalancesSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesSparse.keys())}
-        self.cumlBalancesUSDFilled = {date:[FormatUSD(self.cumlBalancesFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesFilled.keys())}
+        #self.timestampCumlBalSparse = wallet.timestampCumlBalSparse
+        self.dateCumlBalSparse = wallet.dateCumlBalSparse
+        self.dateCumlBalFilled = wallet.dateCumlBalFilled
+        self.dateCumlBalUSDSparse = {date:[FormatUSD(self.dateCumlBalSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalSparse.keys())}
+        self.cumlBalancesUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
         
 
 
