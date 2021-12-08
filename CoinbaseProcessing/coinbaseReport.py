@@ -2,11 +2,11 @@ from collections import defaultdict
 from cryptocompare.cryptocompare import Timestamp
 import pandas as pd
 from matplotlib import pyplot as plt
-import cryptocompare
 from datetime import datetime as dt
 import datetime
 import json
-import decimal
+from itertools import accumulate
+
 
 CURRENCIES = ['BTC', 'ETH', 'DOGE']
 
@@ -210,10 +210,7 @@ class Wallet():
         # Sort combined buy/convert by timestamp
         combinedSorted = {key:buys[key] for key in sorted(list(buys.keys()))}
         # Cumulative balance
-        #cumlBal = [sum(list(combinedSorted.values())[0:x:1]) for x in range(0, len(list(combinedSorted.values())))]
-        
-        cumlBal = itertools
-
+        cumlBal = list(accumulate(list(combinedSorted.values())))
 
         # Return date -> cuml balance
         return {time:cumlBal for time, cumlBal in zip(list(combinedSorted.keys()), cumlBal)}
