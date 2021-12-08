@@ -195,6 +195,10 @@ class Wallet():
 
         # Create dash stats object and dump to json 
         self.dashStats = WalletDashStats(self)
+        
+        # Json string for this wallet
+        self.walletJson = json.dumps(self.dashStats.__dict__)
+        
         JSON_Str = json.dumps(self.dashStats.__dict__)
         # Save in public folder for accessing through react
         with open(r"./CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w+') as f:

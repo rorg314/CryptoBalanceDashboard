@@ -7,7 +7,6 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 @app.route('/GetWalletData')
-
 def index(plot=False):
     print("Main")
     
@@ -23,12 +22,14 @@ def index(plot=False):
         coin = Coin(currency)
         coinWalletDict[coin] = Wallet(coin, reportData)
     
+    responseDict = {coin.name:wallet.walletJson for coin, wallet in zip(coinWalletDict.keys(), coinWalletDict.values())}
+    
     print("Stored wallet data")
 
     if(plot):
         Plot(reportData)
 
-    response = jsonify(coinWalletDict)
+    response = jsonify(responseDict)
     response.headers.add('Access-Control-Allow-Origin', '*')
     
     return response
