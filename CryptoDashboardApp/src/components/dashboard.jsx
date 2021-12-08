@@ -2,7 +2,11 @@ import React, { Component } from "react";
 
 import { Tabs, Tab } from "react-bootstrap";
 import Wallet from "./wallet.jsx";
-import { FetchWallet, FetchAllWallets } from "../coinbase/wallets";
+import {
+  FetchWallet,
+  FetchAllWallets,
+  FetchWalletJson,
+} from "../coinbase/wallets";
 
 class Dashboard extends React.Component {
   state = {
@@ -14,6 +18,9 @@ class Dashboard extends React.Component {
     FetchAllWallets(this.props.coins).then((res) => {
       this.setState({ wallets: res });
     });
+
+    // Fetch data from the backend API
+    FetchWalletJson();
 
     //FetchAllWallets(this.props.coins).then((res) => console.log(res));
   }
