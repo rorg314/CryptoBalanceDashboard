@@ -235,7 +235,6 @@ class Wallet():
             prevDateStr = dateStr
             prevTimestamp = timestamp
         return dateStrCumlBalDict
-
     
 
     # Return dict with cuml balance on every date (for known price data)
