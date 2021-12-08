@@ -98,7 +98,7 @@ def FormatBTC(raw):
 
 
 # Process a pair of ordered lists of timestamps and transactions into a dict of timestamp -> transactions (accounts for transactions on the same day which it did not previously)
-def TimestampTransactionsListDict(timestamps:list, transactions:list):
+def TimestampTransactionsDict(timestamps:list, transactions:list):
     timestampTransactionsDict = defaultdict(list)
     
     for idx, timestamp in enumerate(timestamps):
@@ -108,7 +108,7 @@ def TimestampTransactionsListDict(timestamps:list, transactions:list):
 
 
 # Same as above but aggregates multiple buys on single days
-def TimestampTransactionsDict(timestamps:list, transactions:list):
+def TimestampTransactionsDayAggregate(timestamps:list, transactions:list):
     timestampTransactionsDict = dict()
 
     lastTimestamp = None
@@ -171,20 +171,24 @@ class ReportData():
 
 
 class Wallet():
-    def __init__(self, coin:Coin, reportData:ReportData, balance=0):
+    def __init__(self, coin:Coin, reportData:ReportData):
         # Coin in this wallet
         self.coin = coin
 
         # Dict of timestamp -> amount bought
-        self.timestampBuys = TimestampTransactionsDict(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())
+        self.timestampBuysDict = {time:trans for time, trans in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
         
-        # Dict of timestamp -> amount converted (negative in base currency)
-        self.timestampConverts = TimestampTransactionsDict(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])
+        # Dict of timestamp -> amount converted (sold - negative in base currency)
+        self.timestampConvertSellsDict = {time:trans for time, trans in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])}
 
-        # Date -> cumlBalance dict (sparse)
-        self.timestampCumlBalSparse = self.CalculateCumlBalanceSparse()
-        # Date -> cumlBalance (filled)
-        self.timestampCumlBalFilled = self.CalculateCumlBalanceFilled()
+        # Timestamp -> cumlBalance dict (sparse)
+        self.timestampCumlBalSparse = self.TimestampCumlBalanceSparse()
+        
+        # Date -> cumlBalance (sparse)
+        self.dateCumlBalSparse = self.DateStrCumlBalanceSparse()
+
+        # Date -> cumlBalance (filled days)
+        self.dateCumlBalFilled = self.DateCumlBalanceFilled()
 
         # Coin total balance (latest)
         self.balance = list(self.timestampCumlBalSparse.values())[-1]
@@ -198,22 +202,46 @@ class Wallet():
             
 
     # Calculate cumulative balance for buy/convert dates only
-    def CalculateCumlBalanceSparse(self):
+    def TimestampCumlBalanceSparse(self):
     
-        buys = self.timestampBuys
+        buys = self.timestampBuysDict
         # Add converts to buys
-        buys.update(self.timestampConverts)
+        buys.update(self.timestampConvertSellsDict)
         # Sort combined buy/convert by timestamp
         combinedSorted = {key:buys[key] for key in sorted(list(buys.keys()))}
         # Cumulative balance
-        cumlBal = [sum(list(combinedSorted.values())[0:x:1]) for x in range(0, len(list(combinedSorted.values())))]
+        #cumlBal = [sum(list(combinedSorted.values())[0:x:1]) for x in range(0, len(list(combinedSorted.values())))]
         
+        cumlBal = itertools
+
+
         # Return date -> cuml balance
-        return {dt.strftime(time, '%Y-%m-%d'):cumlBal for time, cumlBal in zip(list(combinedSorted.keys()), cumlBal)}
+        return {time:cumlBal for time, cumlBal in zip(list(combinedSorted.keys()), cumlBal)}
+
+    # Aggregates cuml balance on single dates into dict of dateStr -> transacted amount
+    def DateStrCumlBalanceSparse(self):
+        
+        cumlBalSparse = self.timestampCumlBalSparse
+        
+        dateStrCumlBalDict = dict()
+        
+        # Set start timestamp
+        prevTimestamp = list(cumlBalSparse.keys())[0]
+        prevDateStr = prevTimestamp._date_repr
+        
+        for timestamp in cumlBalSparse.keys():
+            dateStr = timestamp._date_repr
+            if(dateStr != prevDateStr):
+                # Onto a new date, set cuml balance of the previous date 
+                dateStrCumlBalDict[prevDateStr] = cumlBalSparse[prevTimestamp]
+            prevDateStr = dateStr
+            prevTimestamp = timestamp
+        return dateStrCumlBalDict
+
     
 
     # Return dict with cuml balance on every date (for known price data)
-    def CalculateCumlBalanceFilled(self):
+    def DateCumlBalanceFilled(self):
         # All dates
         dates = list(self.coin.dateHighLow.keys())
         
@@ -239,7 +267,7 @@ class WalletDashStats():
         self.symbol = wallet.coin.symbol
         self.balance = FormatBTC(wallet.balance) 
         self.cumlBalancesSparse = wallet.timestampCumlBalSparse
-        self.cumlBalancesFilled = wallet.timestampCumlBalFilled
+        self.cumlBalancesFilled = wallet.dateCumlBalFilled
         self.cumlBalancesUSDSparse = dict()
         self.cumlBalancesUSDSparse = {date:[FormatUSD(self.cumlBalancesSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesSparse.keys())}
         self.cumlBalancesUSDFilled = {date:[FormatUSD(self.cumlBalancesFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.cumlBalancesFilled.keys())}
