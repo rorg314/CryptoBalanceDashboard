@@ -22,7 +22,7 @@ def index(plot=False):
         coin = Coin(currency)
         coinWalletDict[coin] = Wallet(coin, reportData)
     
-    responseDict = {coin.name:wallet.walletJson for coin, wallet in zip(coinWalletDict.keys(), coinWalletDict.values())}
+    responseDict = {coin.name:wallet.dashStats.__dict__ for coin, wallet in zip(coinWalletDict.keys(), coinWalletDict.values())}
     
     print("Stored wallet data")
 

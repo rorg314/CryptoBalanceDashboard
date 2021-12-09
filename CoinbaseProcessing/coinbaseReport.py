@@ -199,10 +199,10 @@ class Wallet():
         # Json string for this wallet
         self.walletJson = json.dumps(self.dashStats.__dict__)
         
-        JSON_Str = json.dumps(self.dashStats.__dict__)
-        # Save in public folder for accessing through react
-        with open(r"./CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w+') as f:
-            json.dump(JSON_Str, f)
+        # JSON_Str = json.dumps(self.dashStats.__dict__)
+        # # Save in public folder for accessing through react
+        # with open(r"./CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w+') as f:
+        #     json.dump(JSON_Str, f)
             
 
     # Calculate cumulative balance for buy/convert dates only

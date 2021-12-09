@@ -2,11 +2,7 @@ import React, { Component } from "react";
 
 import { Tabs, Tab } from "react-bootstrap";
 import Wallet from "./wallet.jsx";
-import {
-  FetchWallet,
-  FetchAllWallets,
-  FetchWalletJson,
-} from "../coinbase/wallets";
+import { FetchAllWallets, FetchAllWalletsOld } from "../coinbase/wallets";
 
 class Dashboard extends React.Component {
   state = {
@@ -14,13 +10,16 @@ class Dashboard extends React.Component {
   };
 
   componentDidMount() {
-    // Load wallets
-    FetchAllWallets(this.props.coins).then((res) => {
-      this.setState({ wallets: res });
-    });
+    // Load wallets from local JSON (old)
+    // FetchAllWalletsOld(this.props.coins).then((res) => {
+    //   this.setState({ wallets: res });
+    // });
 
-    // Fetch data from the backend API
-    FetchWalletJson();
+    // Fetch data from the backend API (data values are JSON strings so must parse)
+    FetchAllWallets().then((res) => {
+      //console.log(res);
+      this.setState({ wallets: Object.values(res) });
+    });
 
     //FetchAllWallets(this.props.coins).then((res) => console.log(res));
   }

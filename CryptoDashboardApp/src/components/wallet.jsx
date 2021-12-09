@@ -5,7 +5,7 @@ import { Tabs, Tab } from "react-bootstrap";
 class Wallet extends React.Component {
   render() {
     //console.log("Creating wallet: State: ", this.state, "Props: ", this.props);
-    console.log(typeof this.props.wallet.dateCumlBalUSDSparse);
+
     return (
       <div>
         <h2>
