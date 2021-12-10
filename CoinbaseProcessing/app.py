@@ -10,19 +10,13 @@ app = Flask(__name__)
 def index(plot=False):
     print("Main")
     
-    reportData = ReportData("./CoinbaseProcessing/Report.csv")
-    
-    
+    # Fetch price data 
     pairs = [curr+"/USD" for curr in CURRENCIES]
     FetchCachedPriceData(pairs)
+
+    reportData = ReportData("./CoinbaseProcessing/Report.csv")
     
-    coinWalletDict = dict()
-    
-    for currency in CURRENCIES:
-        coin = Coin(currency)
-        coinWalletDict[coin] = Wallet(coin, reportData)
-    
-    responseDict = {coin.name:wallet.dashStats.__dict__ for coin, wallet in zip(coinWalletDict.keys(), coinWalletDict.values())}
+    responseDict = {coin.name:wallet.dashStats.__dict__ for coin, wallet in zip(reportData.coinWalletDict.keys(), reportData.coinWalletDict.values())}
     
     print("Stored wallet data")
 

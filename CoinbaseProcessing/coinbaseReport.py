@@ -7,6 +7,8 @@ import datetime
 import json
 from itertools import accumulate
 
+from priceData import *
+
 
 CURRENCIES = ['BTC', 'ETH', 'DOGE']
 
@@ -126,6 +128,21 @@ def TimestampTransactionsDayAggregate(timestamps:list, transactions:list):
     
 
 # ======================================================== #
+# ========================= MAIN ========================= #
+# ======================================================== #
+
+
+def CreateAllCoinWallets(reportData):
+    coinWalletDict = dict()
+    
+    for currency in CURRENCIES:
+        coin = Coin(currency)
+        coinWalletDict[coin] = Wallet(coin, reportData)
+
+    return coinWalletDict
+
+
+# ======================================================== #
 # ======================== CLASSES ======================= #
 # ======================================================== #
 
@@ -163,11 +180,15 @@ class ReportData():
         self.allConvertsDf.sort_values(by='Timestamp')
         
         # Extract all the converts
-
         self.convertedToCurrencyDict = ExtractConvertData(self.allConvertsDf)
 
+        # Create all wallets
+        self.coinWalletDict = CreateAllCoinWallets(self)
 
-        print(2)
+        # All balances string
+        self.allBalanceStr = [FormatBTC( wallet.balance )+ " " + wallet.coin.name + " " for wallet in self.coinWalletDict.values()]
+        
+
 
 
 
@@ -175,33 +196,38 @@ class Wallet():
     def __init__(self, coin:Coin, reportData:ReportData):
         # Coin in this wallet
         self.coin = coin
+        if(coin.name != "ALL"):
+            # Dict of timestamp -> amount bought
+            self.timestampBuysDict = {time:trans for time, trans in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
+            
+            # Dict of timestamp -> amount converted (sold - negative in base currency)
+            self.timestampConvertSellsDict = {time:trans for time, trans in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])}
 
-        # Dict of timestamp -> amount bought
-        self.timestampBuysDict = {time:trans for time, trans in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
-        
-        # Dict of timestamp -> amount converted (sold - negative in base currency)
-        self.timestampConvertSellsDict = {time:trans for time, trans in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])}
+            # Dict of timestamp -> amount received from convert
+            self.timestampConvertReceiveDict = reportData.convertedToCurrencyDict[coin.name]
 
-        # Dict of timestamp -> amount received from convert
-        self.timestampConvertReceiveDict = reportData.convertedToCurrencyDict[coin.name]
+            # Timestamp -> cumlBalance dict (sparse)
+            self.timestampCumlBalSparse = self.TimestampCumlBalanceSparse()
+            
+            # Date -> cumlBalance (sparse)
+            self.dateCumlBalSparse = self.DateStrCumlBalanceSparse()
 
-        # Timestamp -> cumlBalance dict (sparse)
-        self.timestampCumlBalSparse = self.TimestampCumlBalanceSparse()
-        
-        # Date -> cumlBalance (sparse)
-        self.dateCumlBalSparse = self.DateStrCumlBalanceSparse()
+            # Date -> cumlBalance (filled days)
+            self.dateCumlBalFilled = self.DateCumlBalanceFilled()
 
-        # Date -> cumlBalance (filled days)
-        self.dateCumlBalFilled = self.DateCumlBalanceFilled()
+            # Coin total balance (latest)
+            self.balance = list(self.timestampCumlBalSparse.values())[-1]
 
-        # Coin total balance (latest)
-        self.balance = list(self.timestampCumlBalSparse.values())[-1]
+            # Create dash stats object and dump to json 
+            self.dashStats = WalletDashStats(self)
+            
+            # Json string for this wallet
+            self.walletJson = json.dumps(self.dashStats.__dict__)
+        elif(coin.name == "ALL"):
+            self.CreateAllWallet(reportData)
 
-        # Create dash stats object and dump to json 
-        self.dashStats = WalletDashStats(self)
-        
-        # Json string for this wallet
-        self.walletJson = json.dumps(self.dashStats.__dict__)
+        def CreateAllWallet(reportData):
+            self.balance = reportData.allBalanceStr
         
         # JSON_Str = json.dumps(self.dashStats.__dict__)
         # # Save in public folder for accessing through react
