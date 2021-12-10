@@ -76,7 +76,8 @@ def ExtractConvertData(allConvertsDf:pd.DataFrame):
         split = note.strip().split(' ')
         amount = float(split[-2])
         currency = split[-1]
-        convertedToCurrencyDict[currency][timestamp] = convertedToCurrencyDict[currency][timestamp] + amount
+        if(currency in list(convertedToCurrencyDict.keys())):
+            convertedToCurrencyDict[currency][timestamp] = convertedToCurrencyDict[currency][timestamp] + amount
     
     return convertedToCurrencyDict
 
@@ -180,6 +181,9 @@ class Wallet():
         
         # Dict of timestamp -> amount converted (sold - negative in base currency)
         self.timestampConvertSellsDict = {time:trans for time, trans in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])}
+
+        # Dict of timestamp -> amount received from convert
+        self.timestampConvertReceiveDict = reportData.convertedToCurrencyDict[coin.name]
 
         # Timestamp -> cumlBalance dict (sparse)
         self.timestampCumlBalSparse = self.TimestampCumlBalanceSparse()
