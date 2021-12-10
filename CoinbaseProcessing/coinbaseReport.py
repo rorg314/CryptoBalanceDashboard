@@ -103,13 +103,17 @@ def FormatBTC(raw):
         return raw
     return f"{raw:.8f}"
 
-def ParseAmount(string):
+def ParseValue(string):
     remove = ['$']
     remove.extend(CURRENCIES)
     for rem in remove:
         string = string.replace(rem, '')
     string = string.strip()
-    return float(string)
+    try:
+        return float(string)
+    except:
+        print("Could not parse value!" + string)
+        return None
 
 
 # Process a pair of ordered lists of timestamps and transactions into a dict of timestamp -> transactions (accounts for transactions on the same day which it did not previously)
@@ -205,8 +209,8 @@ class ReportData():
         self.allBalanceStr = ''.join([" " + FormatBTC( wallet.balance )+ "" + wallet.coin.name + " +" for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"])
         # Remove last trailing plus
         self.allBalanceStr = self.allBalanceStr[:-1]
-        self.allUsdStrHigh = ''.join([wallet.dashStats.allUsdStrHigh  for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]) + " = " + FormatUSD(sum([ParseAmount( wallet.dashStats.allUsdStrHigh ) for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]))
-        self.allUsdStrLow = ''.join([wallet.dashStats.allUsdStrLow  for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]) + " = " + FormatUSD(sum([ParseAmount( wallet.dashStats.allUsdStrLow ) for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]))
+        self.allUsdStrHigh = ''.join([wallet.dashStats.allUsdStrHigh  for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]) + " = " + FormatUSD(sum([ParseValue( wallet.dashStats.allUsdStrHigh ) for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]))
+        self.allUsdStrLow = ''.join([wallet.dashStats.allUsdStrLow  for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]) + " = " + FormatUSD(sum([ParseValue( wallet.dashStats.allUsdStrLow ) for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]))
 
         
 
@@ -336,11 +340,24 @@ class WalletDashStats():
             self.cumlBalancesUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
             self.allUsdStrHigh = FormatUSD(list(self.cumlBalancesUSDFilled.values())[-1][0]) + " " + self.coin + " "
             self.allUsdStrLow = FormatUSD(list(self.cumlBalancesUSDFilled.values())[-1][1] )+ " " + self.coin + " "
-
+            
         if(self.coin == "ALL"):
             self.balance = wallet.balance
             self.allUsdStrHigh = reportData.allUsdStrHigh
             self.allUsdStrLow = reportData.allUsdStrLow
+            self.tableHeaders = [' ']
+            self.tableHeaders.extend([coin.name for coin in list(reportData.coinWalletDict.keys())])
+            self.tableHeaders.extend(["Total"])
+            self.balanceRow = ['Balance:']
+            self.balanceRow.extend([ParseValue(bal) for bal in self.balance.strip().replace(' + ', ' ').split(' ') if bal != None ] )
+            self.balanceRow.extend([" "])
+            self.balanceUsdHighRow = ['High:']
+            self.balanceUsdLowRow = ['Low:']
+            self.allUsdStrHigh.strip().replace(' $ ', ' ').split(' ')
+            self.balanceUsdHighRow.extend(ParseValue(balUsd) for balUsd in self.allUsdStrHigh.strip().replace(' $ ', ' ').split(' ') )
+            self.balanceUsdLowRow.extend(ParseValue(balUsd) for balUsd in self.allUsdStrLow.strip().replace(' $ ', ' ').split(' ') if balUsd is not None)
+            self.balanceUsdHighRow = list(filter(None, self.balanceUsdHighRow))
+            self.balanceUsdLowRow = list(filter(None, self.balanceUsdLowRow))
             self.dateCumlBalSparse = ""
             self.dateCumlBalFilled = ""
             self.dateCumlBalUSDSparse = ""

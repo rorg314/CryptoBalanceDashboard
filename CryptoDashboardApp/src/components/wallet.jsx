@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Tabs, Tab } from "react-bootstrap";
+import { Table } from "./table";
+import "bootstrap/dist/css/bootstrap.css";
 // Component to hold individual coin statistics
 
 class Wallet extends React.Component {
@@ -25,16 +27,46 @@ class Wallet extends React.Component {
       );
     } else {
       return (
-        <div>
-          <h2>Balance: {this.props.wallet.balance + " "} </h2>
-          <h2 style={{ color: "green" }}>
-            High: {this.props.wallet.allUsdStrHigh}
-          </h2>
-          <h2 style={{ color: "red" }}>
-            Low:
-            {this.props.wallet.allUsdStrLow}
-          </h2>
-        </div>
+        <React.Fragment>
+          <div>
+            <h2>Balance: {this.props.wallet.balance + " "} </h2>
+            <h2 style={{ color: "green" }}>
+              High: {this.props.wallet.allUsdStrHigh}
+            </h2>
+            <h2 style={{ color: "red" }}>
+              Low:
+              {this.props.wallet.allUsdStrLow}
+            </h2>
+          </div>
+          <div>
+            <table>
+              <thead>
+                <tr>
+                  {this.props.wallet.tableHeaders.map((col) => {
+                    return <td>{col}</td>;
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {this.props.wallet.balanceRow.map((col) => {
+                    return <td> {col} </td>;
+                  })}
+                </tr>
+                <tr>
+                  {this.props.wallet.balanceUsdHighRow.map((col) => {
+                    return <td>$ {col}</td>;
+                  })}
+                </tr>
+                <tr>
+                  {this.props.wallet.balanceUsdLowRow.map((col) => {
+                    return <td>$ {col}</td>;
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </React.Fragment>
       );
     }
   }
