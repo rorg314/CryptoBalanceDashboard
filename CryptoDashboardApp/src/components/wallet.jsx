@@ -28,7 +28,7 @@ class Wallet extends React.Component {
     } else {
       return (
         <React.Fragment>
-          <div>
+          {/* <div>
             <h2>Balance: {this.props.wallet.balance + " "} </h2>
             <h2 style={{ color: "green" }}>
               High: {this.props.wallet.allUsdStrHigh}
@@ -37,13 +37,13 @@ class Wallet extends React.Component {
               Low:
               {this.props.wallet.allUsdStrLow}
             </h2>
-          </div>
+          </div> */}
           <div>
-            <table>
+            <table className="table">
               <thead>
-                <tr>
+                <tr className="m-2">
                   {this.props.wallet.tableHeaders.map((col) => {
-                    return <td>{col}</td>;
+                    return <td> {col} </td>;
                   })}
                 </tr>
               </thead>
@@ -55,12 +55,20 @@ class Wallet extends React.Component {
                 </tr>
                 <tr>
                   {this.props.wallet.balanceUsdHighRow.map((col) => {
-                    return <td>$ {col}</td>;
+                    return (
+                      <td>
+                        <h2 style={{ color: "green" }}>$ {col}</h2>
+                      </td>
+                    );
                   })}
                 </tr>
                 <tr>
                   {this.props.wallet.balanceUsdLowRow.map((col) => {
-                    return <td>$ {col}</td>;
+                    return (
+                      <td>
+                        <h2 style={{ color: "red" }}>$ {col}</h2>
+                      </td>
+                    );
                   })}
                 </tr>
               </tbody>
