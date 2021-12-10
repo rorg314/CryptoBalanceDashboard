@@ -6,20 +6,30 @@ class Wallet extends React.Component {
   render() {
     //console.log("Creating wallet: State: ", this.state, "Props: ", this.props);
 
-    return (
-      <div>
-        <h2>
-          Balance: {this.props.wallet.balance + " " + this.props.wallet.coin}{" "}
-        </h2>
-        <h2 style={{ color: "green" }}>
-          High: $
-          {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[0]}
-        </h2>
-        <h2 style={{ color: "red" }}>
-          Low: ${Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[1]}
-        </h2>
-      </div>
-    );
+    if (this.props.wallet.coin != "ALL") {
+      return (
+        <div>
+          <h2>
+            Balance: {this.props.wallet.balance + " " + this.props.wallet.coin}{" "}
+          </h2>
+
+          <h2 style={{ color: "green" }}>
+            High: $
+            {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[0]}
+          </h2>
+          <h2 style={{ color: "red" }}>
+            Low: $
+            {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[1]}
+          </h2>
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <h2>Balance: {this.props.wallet.balance + " "} </h2>
+        </div>
+      );
+    }
   }
 }
 

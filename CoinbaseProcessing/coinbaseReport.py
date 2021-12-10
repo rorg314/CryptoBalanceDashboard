@@ -94,9 +94,13 @@ def FilterCurrencyData(currencyDf, buyDf, convertDf):
 
 # Format a converted price in USD with 2 decimal places
 def FormatUSD(rawPrice):
+    if(isinstance(rawPrice, str)):
+        return rawPrice
     return f"{rawPrice:.2f}"
 
 def FormatBTC(raw):
+    if(isinstance(raw, str)):
+        return raw
     return f"{raw:.8f}"
 
 
@@ -138,6 +142,8 @@ def CreateAllCoinWallets(reportData):
     for currency in CURRENCIES:
         coin = Coin(currency)
         coinWalletDict[coin] = Wallet(coin, reportData)
+    
+    
 
     return coinWalletDict
 
@@ -151,11 +157,15 @@ class Coin():
     def __init__(self, name:str):
         # Name of the coin
         self.name = name
+        
         # Symbol /USD
         self.symbol = self.name+"-USD"
-        # Previous prices
-        with open(r"./CryptoDashboardApp/Public/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
-            self.dateHighLow = json.loads(f.readline())
+        if(name != "ALL"):
+            # Previous prices
+            with open(r"./CryptoDashboardApp/Public/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
+                self.dateHighLow = json.loads(f.readline())
+        else:
+            self.dateHighLow = ""
         
 
 
@@ -186,8 +196,12 @@ class ReportData():
         self.coinWalletDict = CreateAllCoinWallets(self)
 
         # All balances string
-        self.allBalanceStr = [FormatBTC( wallet.balance )+ " " + wallet.coin.name + " " for wallet in self.coinWalletDict.values()]
-        
+        self.allBalanceStr = ''.join([FormatBTC( wallet.balance )+ " " + wallet.coin.name + " + " for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"])
+
+        allCoin = Coin("ALL")
+        self.coinWalletDict[allCoin] = Wallet(allCoin, self)
+
+        print("h")
 
 
 
@@ -226,8 +240,11 @@ class Wallet():
         elif(coin.name == "ALL"):
             self.CreateAllWallet(reportData)
 
-        def CreateAllWallet(reportData):
-            self.balance = reportData.allBalanceStr
+    def CreateAllWallet(self, reportData):
+        self.balance = reportData.allBalanceStr
+        self.dashStats = WalletDashStats(self)
+
+
         
         # JSON_Str = json.dumps(self.dashStats.__dict__)
         # # Save in public folder for accessing through react
@@ -297,12 +314,18 @@ class WalletDashStats():
     def __init__(self, wallet:Wallet):
         self.coin = wallet.coin.name
         self.symbol = wallet.coin.symbol
-        self.balance = FormatBTC(wallet.balance) 
-        #self.timestampCumlBalSparse = wallet.timestampCumlBalSparse
-        self.dateCumlBalSparse = wallet.dateCumlBalSparse
-        self.dateCumlBalFilled = wallet.dateCumlBalFilled
-        self.dateCumlBalUSDSparse = {date:[FormatUSD(self.dateCumlBalSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalSparse.keys())}
-        self.cumlBalancesUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
-        
+        self.balance = FormatBTC(wallet.balance)
+        if(self.coin != "ALL"):
+            #self.timestampCumlBalSparse = wallet.timestampCumlBalSparse
+            self.dateCumlBalSparse = wallet.dateCumlBalSparse
+            self.dateCumlBalFilled = wallet.dateCumlBalFilled
+            self.dateCumlBalUSDSparse = {date:[FormatUSD(self.dateCumlBalSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalSparse.keys())}
+            self.cumlBalancesUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
+            
 
-
+        if(self.coin == "ALL"):
+            self.balance = wallet.balance
+            self.dateCumlBalSparse = ""
+            self.dateCumlBalFilled = ""
+            self.dateCumlBalUSDSparse = ""
+            self.cumlBalancesUSDFilled = ""
