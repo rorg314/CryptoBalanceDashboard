@@ -76,8 +76,8 @@ def ExtractConvertData(allConvertsDf:pd.DataFrame):
         split = note.strip().split(' ')
         amount = float(split[-2])
         currency = split[-1]
-        if(currency in list(convertedToCurrencyDict.keys())):
-            convertedToCurrencyDict[currency][timestamp] = convertedToCurrencyDict[currency][timestamp] + amount
+        
+        convertedToCurrencyDict[currency][timestamp] = convertedToCurrencyDict[currency][timestamp] + amount
     
     return convertedToCurrencyDict
 
@@ -215,6 +215,7 @@ class Wallet():
         buys = self.timestampBuysDict
         # Add converts to buys
         buys.update(self.timestampConvertSellsDict)
+        buys.update(self.timestampConvertReceiveDict)
         # Sort combined buy/convert by timestamp
         combinedSorted = {key:buys[key] for key in sorted(list(buys.keys()))}
         # Cumulative balance
