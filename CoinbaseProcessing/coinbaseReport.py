@@ -96,12 +96,20 @@ def FilterCurrencyData(currencyDf, buyDf, convertDf):
 def FormatUSD(rawPrice):
     if(isinstance(rawPrice, str)):
         return rawPrice
-    return f"{rawPrice:.2f}"
+    return "$ " + f"{rawPrice:.2f}"
 
 def FormatBTC(raw):
     if(isinstance(raw, str)):
         return raw
     return f"{raw:.8f}"
+
+def ParseAmount(string):
+    remove = ['$']
+    remove.extend(CURRENCIES)
+    for rem in remove:
+        string = string.replace(rem, '')
+    string = string.strip()
+    return float(string)
 
 
 # Process a pair of ordered lists of timestamps and transactions into a dict of timestamp -> transactions (accounts for transactions on the same day which it did not previously)
@@ -142,8 +150,6 @@ def CreateAllCoinWallets(reportData):
     for currency in CURRENCIES:
         coin = Coin(currency)
         coinWalletDict[coin] = Wallet(coin, reportData)
-    
-    
 
     return coinWalletDict
 
@@ -160,7 +166,7 @@ class Coin():
         
         # Symbol /USD
         self.symbol = self.name+"-USD"
-        if(name != "ALL"):
+        if(self.name != "ALL"):
             # Previous prices
             with open(r"./CryptoDashboardApp/Public/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
                 self.dateHighLow = json.loads(f.readline())
@@ -196,7 +202,13 @@ class ReportData():
         self.coinWalletDict = CreateAllCoinWallets(self)
 
         # All balances string
-        self.allBalanceStr = ''.join([FormatBTC( wallet.balance )+ " " + wallet.coin.name + " + " for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"])
+        self.allBalanceStr = ''.join([" " + FormatBTC( wallet.balance )+ "" + wallet.coin.name + " +" for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"])
+        # Remove last trailing plus
+        self.allBalanceStr = self.allBalanceStr[:-1]
+        self.allUsdStrHigh = ''.join([wallet.dashStats.allUsdStrHigh  for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]) + " = " + FormatUSD(sum([ParseAmount( wallet.dashStats.allUsdStrHigh ) for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]))
+        self.allUsdStrLow = ''.join([wallet.dashStats.allUsdStrLow  for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]) + " = " + FormatUSD(sum([ParseAmount( wallet.dashStats.allUsdStrLow ) for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]))
+
+        
 
         allCoin = Coin("ALL")
         self.coinWalletDict[allCoin] = Wallet(allCoin, self)
@@ -221,7 +233,7 @@ class Wallet():
             self.timestampConvertReceiveDict = reportData.convertedToCurrencyDict[coin.name]
 
             # Timestamp -> cumlBalance dict (sparse)
-            self.timestampCumlBalSparse = self.TimestampCumlBalanceSparse()
+            self.dateCumlBalSparse = self.TimestampCumlBalanceSparse()
             
             # Date -> cumlBalance (sparse)
             self.dateCumlBalSparse = self.DateStrCumlBalanceSparse()
@@ -230,11 +242,11 @@ class Wallet():
             self.dateCumlBalFilled = self.DateCumlBalanceFilled()
 
             # Coin total balance (latest)
-            self.balance = list(self.timestampCumlBalSparse.values())[-1]
+            self.balance = list(self.dateCumlBalSparse.values())[-1]
 
             # Create dash stats object and dump to json 
-            self.dashStats = WalletDashStats(self)
-            
+            self.dashStats = WalletDashStats(self, reportData)
+
             # Json string for this wallet
             self.walletJson = json.dumps(self.dashStats.__dict__)
         elif(coin.name == "ALL"):
@@ -242,9 +254,8 @@ class Wallet():
 
     def CreateAllWallet(self, reportData):
         self.balance = reportData.allBalanceStr
-        self.dashStats = WalletDashStats(self)
-
-
+        self.dashStats = WalletDashStats(self, reportData)  
+        
         
         # JSON_Str = json.dumps(self.dashStats.__dict__)
         # # Save in public folder for accessing through react
@@ -270,7 +281,7 @@ class Wallet():
     # Aggregates cuml balance on single dates into dict of dateStr -> transacted amount
     def DateStrCumlBalanceSparse(self):
         
-        cumlBalSparse = self.timestampCumlBalSparse
+        cumlBalSparse = self.dateCumlBalSparse
         
         dateStrCumlBalDict = dict()
         
@@ -282,10 +293,12 @@ class Wallet():
             dateStr = timestamp._date_repr
             if(dateStr != prevDateStr):
                 # Onto a new date, set cuml balance of the previous date 
-                
                 dateStrCumlBalDict[prevDateStr] = cumlBalSparse[prevTimestamp]
             prevDateStr = dateStr
             prevTimestamp = timestamp
+        # Add the last element 
+        dateStrCumlBalDict[prevDateStr] = cumlBalSparse[prevTimestamp]
+        
         return dateStrCumlBalDict
     
 
@@ -298,8 +311,8 @@ class Wallet():
         cumlBalances = []
         lastValue = 0
         for date in dates:
-            if date in self.timestampCumlBalSparse:
-                lastValue = self.timestampCumlBalSparse[date]
+            if date in self.dateCumlBalSparse:
+                lastValue = self.dateCumlBalSparse[date]
                 # Append the new cuml balance value
                 cumlBalances.append(lastValue)
             else:
@@ -311,7 +324,7 @@ class Wallet():
 
         
 class WalletDashStats():
-    def __init__(self, wallet:Wallet):
+    def __init__(self, wallet:Wallet, reportData):
         self.coin = wallet.coin.name
         self.symbol = wallet.coin.symbol
         self.balance = FormatBTC(wallet.balance)
@@ -321,10 +334,13 @@ class WalletDashStats():
             self.dateCumlBalFilled = wallet.dateCumlBalFilled
             self.dateCumlBalUSDSparse = {date:[FormatUSD(self.dateCumlBalSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalSparse.keys())}
             self.cumlBalancesUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
-            
+            self.allUsdStrHigh = FormatUSD(list(self.cumlBalancesUSDFilled.values())[-1][0]) + " " + self.coin + " "
+            self.allUsdStrLow = FormatUSD(list(self.cumlBalancesUSDFilled.values())[-1][1] )+ " " + self.coin + " "
 
         if(self.coin == "ALL"):
             self.balance = wallet.balance
+            self.allUsdStrHigh = reportData.allUsdStrHigh
+            self.allUsdStrLow = reportData.allUsdStrLow
             self.dateCumlBalSparse = ""
             self.dateCumlBalFilled = ""
             self.dateCumlBalUSDSparse = ""

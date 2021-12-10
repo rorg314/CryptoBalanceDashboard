@@ -14,11 +14,11 @@ class Wallet extends React.Component {
           </h2>
 
           <h2 style={{ color: "green" }}>
-            High: $
+            High:
             {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[0]}
           </h2>
           <h2 style={{ color: "red" }}>
-            Low: $
+            Low:
             {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[1]}
           </h2>
         </div>
@@ -27,6 +27,13 @@ class Wallet extends React.Component {
       return (
         <div>
           <h2>Balance: {this.props.wallet.balance + " "} </h2>
+          <h2 style={{ color: "green" }}>
+            High: {this.props.wallet.allUsdStrHigh}
+          </h2>
+          <h2 style={{ color: "red" }}>
+            Low:
+            {this.props.wallet.allUsdStrLow}
+          </h2>
         </div>
       );
     }
