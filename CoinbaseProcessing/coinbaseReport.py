@@ -1,7 +1,7 @@
 from collections import defaultdict
-from cryptocompare.cryptocompare import Timestamp
+#from cryptocompare.cryptocompare import Timestamp
 import pandas as pd
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 from datetime import datetime as dt
 import datetime
 import json
@@ -12,6 +12,7 @@ from priceData import *
 
 CURRENCIES = ['BTC', 'ETH', 'DOGE']
 
+ROOTPATH = r"D:/Coding/CryptoBalance"
 
 # Build the dataframe from the report csv
 def ExtractReportDataframe(reportPath):
@@ -172,7 +173,7 @@ class Coin():
         self.symbol = self.name+"-USD"
         if(self.name != "ALL"):
             # Previous prices
-            with open(r"./CryptoDashboardApp/Public/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
+            with open(ROOTPATH + r"/CryptoDashboardApp/Public/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
                 self.dateHighLow = json.loads(f.readline())
         else:
             self.dateHighLow = ""
@@ -181,7 +182,7 @@ class Coin():
 
 
 class ReportData():
-    def __init__(self, reportPath="./CoinbaseProcessing/Report.csv"):
+    def __init__(self, reportPath=ROOTPATH+r"/CoinbaseProcessing/Report.csv"):
         self.reportDf = ExtractReportDataframe(reportPath)
         self.currencies = ['BTC', 'ETH', 'DOGE']
         
@@ -263,7 +264,7 @@ class Wallet():
         
         # JSON_Str = json.dumps(self.dashStats.__dict__)
         # # Save in public folder for accessing through react
-        # with open(r"./CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w+') as f:
+        # with open(ROOTPATH + r".CryptoDashboardApp/public/Wallets/" + self.coin.symbol + r"_Wallet.JSON", 'w+') as f:
         #     json.dump(JSON_Str, f)
             
 

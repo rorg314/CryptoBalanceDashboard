@@ -103,7 +103,9 @@ dist
 # TernJS port file
 .tern-port
 
+env
+
 coinbase
 balances/src/coinbase/config.js
-.vscode
+
 __pycache__

@@ -4,11 +4,10 @@ import requests
 import json
 import time
 
-PRICES_FOLDER = r"./CryptoDashboardApp/public/Prices/"
+
+from config import *
 
 def CheckLastFetch(symbol):
-    
-    
     try:
         with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'r') as f:
             lastFetchLines = f.readlines()
@@ -40,7 +39,7 @@ def FetchDailyData(symbol):
         if data is None:
             print("Did not return any data from Coinbase for this symbol")
         else:
-            data.to_csv(f'./CoinbaseProcessing/Prices/Coinbase_{pair_split[0] + pair_split[1]}_dailydata.csv', index=False)
+            data.to_csv(ROOTPATH + f'/CoinbaseProcessing/Prices/Coinbase_{pair_split[0] + pair_split[1]}_dailydata.csv', index=False)
             with open (PRICES_FOLDER +symbol+ r"_lastfetch.txt", 'w+') as f:
                 lastFetch = f.write(str(time.time()))
     else:
@@ -49,7 +48,7 @@ def FetchDailyData(symbol):
 def JSONPriceData(symbol):
     pair_split = symbol.split('/')  # symbol must be in format XXX/XXX ie. BTC/EUR
     symbol = pair_split[0] + '-' + pair_split[1]
-    dataPath = r"./CoinbaseProcessing/Prices/Coinbase_" + pair_split[0] + pair_split[1] + r"_dailydata.csv"
+    dataPath = ROOTPATH + r"/CoinbaseProcessing/Prices/Coinbase_" + pair_split[0] + pair_split[1] + r"_dailydata.csv"
     priceData = pd.read_csv(dataPath)
     dateHighLowDict = {date:(high,low) for date, (high, low) in zip(priceData['date'].to_list(), [highLow for highLow in zip(priceData['high'].to_list(), priceData['low'].to_list())])}
     outPath = PRICES_FOLDER + symbol + r"_DailyPrices_YTD.JSON"

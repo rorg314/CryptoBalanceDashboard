@@ -5,6 +5,13 @@ import "bootstrap/dist/css/bootstrap.css";
 // Component to hold individual coin statistics
 
 class Wallet extends React.Component {
+  colours = {
+    BTC: "orange",
+    ETH: "blue",
+    DOGE: "#cca737",
+    ALL: "black",
+    Total: "black",
+  };
   render() {
     //console.log("Creating wallet: State: ", this.state, "Props: ", this.props);
 
@@ -27,8 +34,58 @@ class Wallet extends React.Component {
       );
     } else {
       return (
-        <React.Fragment>
-          {/* <div>
+        <div>
+          <table className="table m-2">
+            <tbody>
+              <tr className="m-2">
+                {this.props.wallet.tableHeaders.map((col) => {
+                  return (
+                    <td>
+                      <h2 style={{ color: this.colours[col] }}> {col}</h2>
+                    </td>
+                  );
+                })}
+              </tr>
+
+              <tr>
+                {this.props.wallet.balanceRow.map((col) => {
+                  return (
+                    <td>
+                      <h2> {col} </h2>
+                    </td>
+                  );
+                })}
+              </tr>
+              <tr>
+                {this.props.wallet.balanceUsdHighRow.map((col) => {
+                  return (
+                    <td>
+                      <h2 style={{ color: "green" }}>$ {col}</h2>
+                    </td>
+                  );
+                })}
+              </tr>
+              <tr>
+                {this.props.wallet.balanceUsdLowRow.map((col) => {
+                  return (
+                    <td>
+                      <h2 style={{ color: "red" }}>$ {col}</h2>
+                    </td>
+                  );
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+  }
+}
+
+export default Wallet;
+
+{
+  /* <div>
             <h2>Balance: {this.props.wallet.balance + " "} </h2>
             <h2 style={{ color: "green" }}>
               High: {this.props.wallet.allUsdStrHigh}
@@ -37,47 +94,5 @@ class Wallet extends React.Component {
               Low:
               {this.props.wallet.allUsdStrLow}
             </h2>
-          </div> */}
-          <div>
-            <table className="table">
-              <thead>
-                <tr className="m-2">
-                  {this.props.wallet.tableHeaders.map((col) => {
-                    return <td> {col} </td>;
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  {this.props.wallet.balanceRow.map((col) => {
-                    return <td> {col} </td>;
-                  })}
-                </tr>
-                <tr>
-                  {this.props.wallet.balanceUsdHighRow.map((col) => {
-                    return (
-                      <td>
-                        <h2 style={{ color: "green" }}>$ {col}</h2>
-                      </td>
-                    );
-                  })}
-                </tr>
-                <tr>
-                  {this.props.wallet.balanceUsdLowRow.map((col) => {
-                    return (
-                      <td>
-                        <h2 style={{ color: "red" }}>$ {col}</h2>
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </React.Fragment>
-      );
-    }
-  }
+          </div> */
 }
-
-export default Wallet;
