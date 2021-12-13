@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { Tabs, Tab } from "react-bootstrap";
 import Wallet from "./wallet.jsx";
 import { FetchAllWallets, FetchAllWalletsOld } from "../coinbase/wallets";
+import PriceWidget from "./priceWidget.jsx";
 
 class Dashboard extends React.Component {
   state = {
