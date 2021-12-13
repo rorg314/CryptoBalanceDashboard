@@ -20,22 +20,56 @@ class Wallet extends React.Component {
     if (this.props.wallet.coin != "ALL") {
       return (
         <React.Fragment>
-          <div>
-            <h2>
-              Balance:{" "}
-              {this.props.wallet.balance + " " + this.props.wallet.coin}{" "}
-            </h2>
+          <div style={{ width: "50vw", margin: "auto", padding: "10px" }}>
+            <div>
+              <table className="table">
+                <tbody>
+                  <tr>
+                    <td>
+                      <h2>Balance:</h2>
+                    </td>
+                    <td>
+                      <h2>
+                        {this.props.wallet.balance +
+                          " " +
+                          this.props.wallet.coin}
+                      </h2>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h2 style={{ color: "green" }}>High:</h2>
+                    </td>
+                    <td>
+                      <h2 style={{ color: "green" }}>
+                        {
+                          Object.values(
+                            this.props.wallet.dateCumlBalUSDSparse
+                          ).pop()[0]
+                        }
+                      </h2>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <h2 style={{ color: "red" }}>Low:</h2>
+                    </td>
+                    <td>
+                      <h2 style={{ color: "red" }}>
+                        {
+                          Object.values(
+                            this.props.wallet.dateCumlBalUSDSparse
+                          ).pop()[1]
+                        }
+                      </h2>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-            <h2 style={{ color: "green" }}>
-              High:
-              {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[0]}
-            </h2>
-            <h2 style={{ color: "red" }}>
-              Low:
-              {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[1]}
-            </h2>
+            <PriceWidget coin={this.props.wallet.coin} fullGraph={true} />
           </div>
-          <PriceWidget coin={this.props.wallet.coin} fullGraph={true} />
         </React.Fragment>
       );
     } else {

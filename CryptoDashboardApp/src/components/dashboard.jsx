@@ -31,19 +31,21 @@ class Dashboard extends React.Component {
       return <h2>Wallets loading ...</h2>;
     } else {
       return (
-        <Tabs id="dashboardWalletTabs">
-          {this.state.wallets.map((wallet) => {
-            return (
-              <Tab
-                eventKey={"wallet" + wallet.coin}
-                key={"wallet" + wallet.coin}
-                title={wallet.coin}
-              >
-                <Wallet wallet={wallet} />
-              </Tab>
-            );
-          })}
-        </Tabs>
+        <div>
+          <Tabs id="dashboardWalletTabs">
+            {this.state.wallets.map((wallet) => {
+              return (
+                <Tab
+                  eventKey={"wallet" + wallet.coin}
+                  key={"wallet" + wallet.coin}
+                  title={wallet.coin}
+                >
+                  <Wallet wallet={wallet} />
+                </Tab>
+              );
+            })}
+          </Tabs>
+        </div>
       );
     }
   }
