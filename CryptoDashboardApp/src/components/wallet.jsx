@@ -13,6 +13,7 @@ class Wallet extends React.Component {
     ALL: "black",
     Total: "black",
   };
+
   render() {
     //console.log("Creating wallet: State: ", this.state, "Props: ", this.props);
 
@@ -34,54 +35,66 @@ class Wallet extends React.Component {
               {Object.values(this.props.wallet.dateCumlBalUSDSparse).pop()[1]}
             </h2>
           </div>
-          <PriceWidget coin={this.props.wallet.coin} />
+          <PriceWidget coin={this.props.wallet.coin} fullGraph={true} />
         </React.Fragment>
       );
     } else {
       return (
-        <div>
-          <table className="table m-2">
-            <tbody>
-              <tr className="m-2">
-                {this.props.wallet.tableHeaders.map((col) => {
-                  return (
-                    <td>
-                      <h2 style={{ color: this.colours[col] }}> {col}</h2>
-                    </td>
-                  );
-                })}
-              </tr>
+        <React.Fragment>
+          <div>
+            <table className="table m-2">
+              <tbody>
+                <tr className="m-2">
+                  {this.props.wallet.tableHeaders.map((col) => {
+                    return (
+                      <td>
+                        <h2 style={{ color: this.colours[col] }}> {col}</h2>
+                      </td>
+                    );
+                  })}
+                </tr>
 
-              <tr>
-                {this.props.wallet.balanceRow.map((col) => {
-                  return (
-                    <td>
-                      <h2> {col} </h2>
-                    </td>
-                  );
-                })}
-              </tr>
-              <tr>
-                {this.props.wallet.balanceUsdHighRow.map((col) => {
-                  return (
-                    <td>
-                      <h2 style={{ color: "green" }}>$ {col}</h2>
-                    </td>
-                  );
-                })}
-              </tr>
-              <tr>
-                {this.props.wallet.balanceUsdLowRow.map((col) => {
-                  return (
-                    <td>
-                      <h2 style={{ color: "red" }}>$ {col}</h2>
-                    </td>
-                  );
-                })}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                <tr>
+                  {this.props.wallet.balanceRow.map((col) => {
+                    return (
+                      <td>
+                        <h2> {col} </h2>
+                      </td>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  {this.props.wallet.balanceUsdHighRow.map((col) => {
+                    return (
+                      <td>
+                        <h2 style={{ color: "green" }}>$ {col}</h2>
+                      </td>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  {this.props.wallet.balanceUsdLowRow.map((col) => {
+                    return (
+                      <td>
+                        <h2 style={{ color: "red" }}>$ {col}</h2>
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="row">
+            {this.props.wallet.allCoins.map((coin) => {
+              return (
+                <div className="col col-sm">
+                  <PriceWidget coin={coin} fullGraph={false} />{" "}
+                </div>
+              );
+            })}
+          </div>
+        </React.Fragment>
       );
     }
   }

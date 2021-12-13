@@ -343,6 +343,7 @@ class WalletDashStats():
             self.allUsdStrLow = FormatUSD(list(self.cumlBalancesUSDFilled.values())[-1][1] )+ " " + self.coin + " "
             
         if(self.coin == "ALL"):
+            self.allCoins = CURRENCIES
             self.balance = wallet.balance
             self.allUsdStrHigh = reportData.allUsdStrHigh
             self.allUsdStrLow = reportData.allUsdStrLow
