@@ -20,7 +20,14 @@ class Wallet extends React.Component {
     if (this.props.wallet.coin != "ALL") {
       return (
         <React.Fragment>
-          <div style={{ width: "50vw", margin: "auto", padding: "10px" }}>
+          <div
+            style={{
+              width: "70vw",
+              margin: "auto",
+              padding: "10px",
+              position: "relative",
+            }}
+          >
             <div>
               <table className="table">
                 <tbody>
@@ -37,8 +44,8 @@ class Wallet extends React.Component {
                     </td>
                   </tr>
                   <tr>
-                    <td>
-                      <h2 style={{ color: "green" }}>High:</h2>
+                    <td className="align-middle">
+                      <h2>USD:</h2>
                     </td>
                     <td>
                       <h2 style={{ color: "green" }}>
@@ -47,14 +54,7 @@ class Wallet extends React.Component {
                             this.props.wallet.dateCumlBalUSDFilled
                           ).pop()[0]
                         }
-                      </h2>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <h2 style={{ color: "red" }}>Low:</h2>
-                    </td>
-                    <td>
+                      </h2>{" "}
                       <h2 style={{ color: "red" }}>
                         {
                           Object.values(
@@ -63,6 +63,31 @@ class Wallet extends React.Component {
                         }
                       </h2>
                     </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <h2>$ Spent</h2>
+                    </td>
+                    <td>
+                      <h2>{this.props.wallet.usdSpent}</h2>
+                    </td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td className="align-middle">
+                      <h2>$ Profit</h2>
+                    </td>
+                    <td>
+                      <h2 style={{ color: "green" }}>
+                        {this.props.wallet.profitHigh}
+                      </h2>
+                      <h2 style={{ color: "red" }}>
+                        {" "}
+                        {this.props.wallet.profitLow}
+                      </h2>
+                    </td>
+                    <td></td>
                   </tr>
                 </tbody>
               </table>
@@ -115,18 +140,24 @@ class Wallet extends React.Component {
                     );
                   })}
                 </tr>
+
+                <tr>
+                  <td>
+                    <h2>Prices</h2> (24Hr)
+                  </td>
+                  {this.props.wallet.allCoins.map((coin) => {
+                    return (
+                      //<div className="col col-sm">
+                      <td>
+                        <PriceWidget coin={coin} fullGraph={false} />
+                      </td>
+                      //</div>
+                    );
+                  })}
+                  <td></td>
+                </tr>
               </tbody>
             </table>
-          </div>
-
-          <div className="row">
-            {this.props.wallet.allCoins.map((coin) => {
-              return (
-                <div className="col col-sm">
-                  <PriceWidget coin={coin} fullGraph={false} />{" "}
-                </div>
-              );
-            })}
           </div>
         </React.Fragment>
       );

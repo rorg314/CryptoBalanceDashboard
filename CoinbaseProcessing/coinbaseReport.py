@@ -60,11 +60,12 @@ def ExtractCurrencyData(reportDf, currencyStr="BTC"):
     # Slice by converts
     convertDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Convert') &(currencyDf['Fees'] > 0)].loc[:, includeCols]
 
-    # # Extract amounts of converted currency from description col 
-    # convertedToCurrencyDict = ExtractConvertData(convertDf, currencyStr)
+    # Slice by amount spent + fees
+    spentDf = currencyDf.loc[:,['Timestamp', 'Total (inclusive of fees)']].loc[currencyDf['Transaction Type'] == "Buy"]
 
 
-    return currencyDf, buyDf, convertDf#, convertedToCurrencyDict
+
+    return currencyDf, buyDf, convertDf, spentDf 
 
 
 def ExtractConvertData(allConvertsDf:pd.DataFrame):
@@ -87,10 +88,10 @@ def ExtractConvertData(allConvertsDf:pd.DataFrame):
     
 
 #Filter the data to only include those columns 
-def FilterCurrencyData(currencyDf, buyDf, convertDf):
-    includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees', 'Notes']
+# def FilterCurrencyData(currencyDf, buyDf, convertDf):
+#     includeCols = ['Timestamp', 'Quantity Transacted', 'Spot Price at Transaction', 'Subtotal',	'Total (inclusive of fees)', 'Fees', 'Notes']
 
-    return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
+#     return DatetimeTimestamps(currencyDf.loc[:, includeCols]), DatetimeTimestamps(buyDf.loc[:, includeCols]), DatetimeTimestamps(convertDf.loc[:, includeCols])
 
 
 # Format a converted price in USD with 2 decimal places
@@ -187,9 +188,9 @@ class ReportData():
         self.currencies = ['BTC', 'ETH', 'DOGE']
         
         # Build individual currency data from report dataframe
-        self.currencyData, self.buyData, self.convertData, self.allConvertsDf = dict(), dict(), dict(), None
+        self.currencyData, self.buyData, self.convertData, self.spentData, self.allConvertsDf = dict(), dict(), dict(), dict(), None
         for currency in self.currencies:
-            self.currencyData[currency], self.buyData[currency], self.convertData[currency] = ExtractCurrencyData(self.reportDf, currency)
+            self.currencyData[currency], self.buyData[currency], self.convertData[currency], self.spentData[currency]= ExtractCurrencyData(self.reportDf, currency)
             if(self.allConvertsDf is None):
                 # Create the initial all converts dataframe
                 self.allConvertsDf = self.convertData[currency]
@@ -247,6 +248,11 @@ class Wallet():
 
             # Coin total balance (latest)
             self.balance = list(self.dateCumlBalSparse.values())[-1]
+
+            # Total $ spend
+            self.usdSpent = sum(reportData.spentData[self.coin.name]['Total (inclusive of fees)'].dropna().to_list())
+
+            
 
             # Create dash stats object and dump to json 
             self.dashStats = WalletDashStats(self, reportData)
@@ -333,6 +339,7 @@ class WalletDashStats():
         self.symbol = wallet.coin.symbol
         self.balance = FormatBTC(wallet.balance)
         if(self.coin != "ALL"):
+            
             #self.timestampCumlBalSparse = wallet.timestampCumlBalSparse
             self.dateCumlBalSparse = wallet.dateCumlBalSparse
             self.dateCumlBalFilled = wallet.dateCumlBalFilled
@@ -340,6 +347,10 @@ class WalletDashStats():
             self.dateCumlBalUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
             self.allUsdStrHigh = FormatUSD(list(self.dateCumlBalUSDFilled.values())[-1][0]) + " " + self.coin + " "
             self.allUsdStrLow = FormatUSD(list(self.dateCumlBalUSDFilled.values())[-1][1] )+ " " + self.coin + " "
+            
+            self.usdSpent = FormatUSD(wallet.usdSpent)
+            self.profitHigh = FormatUSD(ParseValue(self.allUsdStrHigh) - wallet.usdSpent)
+            self.profitLow = FormatUSD(ParseValue(self.allUsdStrLow) - wallet.usdSpent)
             
         if(self.coin == "ALL"):
             self.allCoins = CURRENCIES
