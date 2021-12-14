@@ -44,7 +44,7 @@ class Wallet extends React.Component {
                       <h2 style={{ color: "green" }}>
                         {
                           Object.values(
-                            this.props.wallet.dateCumlBalUSDSparse
+                            this.props.wallet.dateCumlBalUSDFilled
                           ).pop()[0]
                         }
                       </h2>
@@ -58,7 +58,7 @@ class Wallet extends React.Component {
                       <h2 style={{ color: "red" }}>
                         {
                           Object.values(
-                            this.props.wallet.dateCumlBalUSDSparse
+                            this.props.wallet.dateCumlBalUSDFilled
                           ).pop()[1]
                         }
                       </h2>

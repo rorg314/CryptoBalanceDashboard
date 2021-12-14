@@ -214,7 +214,6 @@ class ReportData():
         self.allUsdStrLow = ''.join([wallet.dashStats.allUsdStrLow  for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]) + " = " + FormatUSD(sum([ParseValue( wallet.dashStats.allUsdStrLow ) for wallet in self.coinWalletDict.values() if wallet.coin.name != "ALL"]))
 
         
-
         allCoin = Coin("ALL")
         self.coinWalletDict[allCoin] = Wallet(allCoin, self)
 
@@ -338,9 +337,9 @@ class WalletDashStats():
             self.dateCumlBalSparse = wallet.dateCumlBalSparse
             self.dateCumlBalFilled = wallet.dateCumlBalFilled
             self.dateCumlBalUSDSparse = {date:[FormatUSD(self.dateCumlBalSparse[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalSparse.keys())}
-            self.cumlBalancesUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
-            self.allUsdStrHigh = FormatUSD(list(self.cumlBalancesUSDFilled.values())[-1][0]) + " " + self.coin + " "
-            self.allUsdStrLow = FormatUSD(list(self.cumlBalancesUSDFilled.values())[-1][1] )+ " " + self.coin + " "
+            self.dateCumlBalUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
+            self.allUsdStrHigh = FormatUSD(list(self.dateCumlBalUSDFilled.values())[-1][0]) + " " + self.coin + " "
+            self.allUsdStrLow = FormatUSD(list(self.dateCumlBalUSDFilled.values())[-1][1] )+ " " + self.coin + " "
             
         if(self.coin == "ALL"):
             self.allCoins = CURRENCIES
@@ -363,4 +362,4 @@ class WalletDashStats():
             self.dateCumlBalSparse = ""
             self.dateCumlBalFilled = ""
             self.dateCumlBalUSDSparse = ""
-            self.cumlBalancesUSDFilled = ""
+            self.dateCumlBalUSDFilled = ""
