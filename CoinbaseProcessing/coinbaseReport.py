@@ -176,6 +176,7 @@ class Coin():
             # Previous prices
             with open(ROOTPATH + r"/CryptoDashboardApp/Public/Prices/" + self.symbol + r"_DailyPrices_YTD.JSON") as f:
                 self.dateHighLow = json.loads(f.readline())
+            self.ath = max(list([value[0] for value in self.dateHighLow.values()]))
         else:
             self.dateHighLow = ""
         
@@ -253,7 +254,6 @@ class Wallet():
             self.usdSpent = sum(reportData.spentData[self.coin.name]['Total (inclusive of fees)'].dropna().to_list())
 
             
-
             # Create dash stats object and dump to json 
             self.dashStats = WalletDashStats(self, reportData)
 
@@ -347,7 +347,9 @@ class WalletDashStats():
             self.dateCumlBalUSDFilled = {date:[FormatUSD(self.dateCumlBalFilled[date] * price) for price in wallet.coin.dateHighLow[date]] for date in list(self.dateCumlBalFilled.keys())}
             self.allUsdStrHigh = FormatUSD(list(self.dateCumlBalUSDFilled.values())[-1][0]) + " " + self.coin + " "
             self.allUsdStrLow = FormatUSD(list(self.dateCumlBalUSDFilled.values())[-1][1] )+ " " + self.coin + " "
-            
+            self.athBal = FormatUSD(float(self.balance) * wallet.coin.ath)
+            self.ath = FormatUSD(wallet.coin.ath)
+
             self.usdSpent = FormatUSD(wallet.usdSpent)
             self.profitHigh = FormatUSD(ParseValue(self.allUsdStrHigh) - wallet.usdSpent)
             self.profitLow = FormatUSD(ParseValue(self.allUsdStrLow) - wallet.usdSpent)

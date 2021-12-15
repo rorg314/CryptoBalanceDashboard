@@ -22,7 +22,7 @@ class Wallet extends React.Component {
         <React.Fragment>
           <div
             style={{
-              width: "70vw",
+              width: "90vw",
               margin: "auto",
               padding: "10px",
               position: "relative",
@@ -49,6 +49,7 @@ class Wallet extends React.Component {
                     </td>
                     <td>
                       <h2 style={{ color: "green" }}>
+                        H
                         {
                           Object.values(
                             this.props.wallet.dateCumlBalUSDFilled
@@ -56,6 +57,7 @@ class Wallet extends React.Component {
                         }
                       </h2>{" "}
                       <h2 style={{ color: "red" }}>
+                        L
                         {
                           Object.values(
                             this.props.wallet.dateCumlBalUSDFilled
@@ -67,7 +69,7 @@ class Wallet extends React.Component {
 
                   <tr>
                     <td>
-                      <h2>$ Spent</h2>
+                      <h2>Spent:</h2>
                     </td>
                     <td>
                       <h2>{this.props.wallet.usdSpent}</h2>
@@ -76,18 +78,29 @@ class Wallet extends React.Component {
                   </tr>
                   <tr>
                     <td className="align-middle">
-                      <h2>$ Profit</h2>
+                      <h2>Profit:</h2>
                     </td>
                     <td>
                       <h2 style={{ color: "green" }}>
-                        {this.props.wallet.profitHigh}
+                        H{this.props.wallet.profitHigh}
                       </h2>
                       <h2 style={{ color: "red" }}>
                         {" "}
-                        {this.props.wallet.profitLow}
+                        L{this.props.wallet.profitLow}
                       </h2>
                     </td>
                     <td></td>
+                  </tr>
+                  <tr>
+                    <td className="align-middle">
+                      <h2>ATH Bal</h2>
+                      {this.props.wallet.ath}
+                    </td>
+                    <td>
+                      <h2 style={{ color: "orange" }}>
+                        {this.props.wallet.athBal}
+                      </h2>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -100,7 +113,14 @@ class Wallet extends React.Component {
     } else {
       return (
         <React.Fragment>
-          <div>
+          <div
+            style={{
+              width: "70vw",
+              margin: "auto",
+              padding: "10px",
+              position: "relative",
+            }}
+          >
             <table className="table m-2">
               <tbody>
                 <tr className="m-2">
@@ -135,23 +155,23 @@ class Wallet extends React.Component {
                   {this.props.wallet.balanceUsdLowRow.map((col) => {
                     return (
                       <td>
-                        <h2 style={{ color: "red" }}>$ {col}</h2>
+                        <h2 style={{ color: "red" }}> $ {col}</h2>
                       </td>
                     );
                   })}
                 </tr>
 
                 <tr>
-                  <td>
+                  <td className="align-middle">
                     <h2>Prices</h2> (24Hr)
                   </td>
                   {this.props.wallet.allCoins.map((coin) => {
                     return (
-                      //<div className="col col-sm">
-                      <td>
-                        <PriceWidget coin={coin} fullGraph={false} />
+                      <td className="align-middle ">
+                        <div className="align-middle">
+                          <PriceWidget coin={coin} fullGraph={false} />
+                        </div>
                       </td>
-                      //</div>
                     );
                   })}
                   <td></td>

@@ -31,7 +31,15 @@ class Dashboard extends React.Component {
       return <h2>Wallets loading ...</h2>;
     } else {
       return (
-        <div>
+        <div
+          className="m-4"
+          style={{
+            width: "90vw",
+            margin: "auto",
+            padding: "10px",
+            position: "relative",
+          }}
+        >
           <Tabs id="dashboardWalletTabs">
             {this.state.wallets.map((wallet) => {
               return (

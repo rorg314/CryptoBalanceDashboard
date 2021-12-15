@@ -101,7 +101,7 @@ class PriceGraphWidget extends React.Component {
       return (
         <div
           style={{
-            width: "220px",
+            width: "100%",
             height: "220px",
             backgroundColor: "#FFFFFF",
             overflow: "hidden",
@@ -110,7 +110,7 @@ class PriceGraphWidget extends React.Component {
             borderRadius: "4px",
             textAlign: "right",
             lineHeight: "14px",
-            blockSize: "220px",
+            blockSize: "100%",
             fontSize: "12px",
             fontFeatureSettings: "normal",
             textSizeAdjust: "100%",
@@ -133,7 +133,7 @@ class PriceGraphWidget extends React.Component {
                 id +
                 "&pref_coin_id=1505"
               }
-              width="220"
+              width="100%"
               height="196px"
               scrolling="auto"
               marginwidth="0"
