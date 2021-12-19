@@ -57,9 +57,9 @@ class PriceGraphWidget extends React.Component {
               width="100%"
               height="536px"
               scrolling="auto"
-              marginwidth="0"
-              marginheight="0"
-              frameborder="0"
+              marginWidth="0"
+              marginHeight="0"
+              frameBorder="0"
               border="0"
               style={{
                 border: 0,
@@ -136,9 +136,9 @@ class PriceGraphWidget extends React.Component {
               width="100%"
               height="196px"
               scrolling="auto"
-              marginwidth="0"
-              marginheight="0"
-              frameborder="0"
+              marginWidth="0"
+              marginHeight="0"
+              frameBorder="0"
               border="0"
               style={{
                 border: "0",
