@@ -14,6 +14,7 @@ CURRENCIES = ['BTC', 'ETH', 'DOGE']
 
 ROOTPATH = r"D:/Coding/CryptoBalance"
 
+
 # Build the dataframe from the report csv
 def ExtractReportDataframe(reportPath):
     
@@ -23,7 +24,16 @@ def ExtractReportDataframe(reportPath):
         if(isinstance(reportDataframe[col][0], str)):
             reportDataframe[col].str.lower()
 
-    return DatetimeTimestamps(reportDataframe)
+    reportDf = DatetimeTimestamps(reportDataframe)
+
+    return ObscureValues(reportDf)
+
+
+def ObscureValues(reportDf):
+
+    reportDf['Quantity Transacted'] = reportDf['Quantity Transacted'].apply(lambda x: x*69)
+
+    return reportDf
 
 
 # Processing timestamp strings (YYYY-MM-DD T HH:MM:SS Z) into datetimes 
@@ -63,9 +73,11 @@ def ExtractCurrencyData(reportDf, currencyStr="BTC"):
     # Slice by amount spent + fees
     spentDf = currencyDf.loc[:,['Timestamp', 'Total (inclusive of fees)']].loc[currencyDf['Transaction Type'] == "Buy"]
 
+    # Get amounts sold
+    soldDf = currencyDf.loc[(currencyDf['Transaction Type'] == 'Sell')].loc[:, includeCols]
 
 
-    return currencyDf, buyDf, convertDf, spentDf 
+    return currencyDf, buyDf, convertDf, spentDf, soldDf
 
 
 def ExtractConvertData(allConvertsDf:pd.DataFrame):
@@ -189,9 +201,9 @@ class ReportData():
         self.currencies = ['BTC', 'ETH', 'DOGE']
         
         # Build individual currency data from report dataframe
-        self.currencyData, self.buyData, self.convertData, self.spentData, self.allConvertsDf = dict(), dict(), dict(), dict(), None
+        self.currencyData, self.buyData, self.convertData, self.spentData, self.sellData, self.allConvertsDf = dict(), dict(), dict(), dict(), dict(), None
         for currency in self.currencies:
-            self.currencyData[currency], self.buyData[currency], self.convertData[currency], self.spentData[currency]= ExtractCurrencyData(self.reportDf, currency)
+            self.currencyData[currency], self.buyData[currency], self.convertData[currency], self.spentData[currency], self.sellData[currency] = ExtractCurrencyData(self.reportDf, currency)
             if(self.allConvertsDf is None):
                 # Create the initial all converts dataframe
                 self.allConvertsDf = self.convertData[currency]
@@ -231,6 +243,8 @@ class Wallet():
         if(coin.name != "ALL"):
             # Dict of timestamp -> amount bought
             self.timestampBuysDict = {time:trans for time, trans in zip(reportData.buyData[coin.name]['Timestamp'].to_list(), reportData.buyData[coin.name]['Quantity Transacted'].to_list())}
+            # Dict of timestamp -> amount sold
+            self.timestampSellsDict = {time:-trans for time, trans in zip(reportData.sellData[coin.name]['Timestamp'].to_list(), reportData.sellData[coin.name]['Quantity Transacted'].to_list())}
             
             # Dict of timestamp -> amount converted (sold - negative in base currency)
             self.timestampConvertSellsDict = {time:trans for time, trans in zip(reportData.convertData[coin.name]['Timestamp'].to_list(), [amt * -1 for amt in reportData.convertData[coin.name]['Quantity Transacted'].to_list()])}
@@ -280,6 +294,8 @@ class Wallet():
         # Add converts to buys
         buys.update(self.timestampConvertSellsDict)
         buys.update(self.timestampConvertReceiveDict)
+        # Add sells as negative buys
+        buys.update(self.timestampSellsDict)
         # Sort combined buy/convert by timestamp
         combinedSorted = {key:buys[key] for key in sorted(list(buys.keys()))}
         # Cumulative balance
