@@ -26,13 +26,6 @@ def ExtractReportDataframe(reportPath):
 
     reportDf = DatetimeTimestamps(reportDataframe)
 
-    return ObscureValues(reportDf)
-
-
-def ObscureValues(reportDf):
-
-    reportDf['Quantity Transacted'] = reportDf['Quantity Transacted'].apply(lambda x: x*69)
-
     return reportDf
 
 
@@ -230,10 +223,6 @@ class ReportData():
         
         allCoin = Coin("ALL")
         self.coinWalletDict[allCoin] = Wallet(allCoin, self)
-
-        print("h")
-
-
 
 
 class Wallet():
